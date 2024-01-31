@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { TNODE_ENV } from "@config/models/t.node.env";
-import { TALGORITHM } from '@config/models/t.algorithm';
+import { Algorithm } from 'jsonwebtoken';
+
+import { TNODE_ENV } from "@models/types/t.node.env";
 
 export function getEnvStr(KEY: string) {
     const VALUE = process.env[KEY];
@@ -43,11 +44,11 @@ export function getPemKey(KEY: string): string {
     return pemKey;
 }
 
-export function getEnvLiteralTypeValue<T extends TALGORITHM[]>(KEY: string) {
+export function getEnvLiteralTypeValue<T extends Algorithm[]>(KEY: string) {
     const VALUE = process.env[KEY];
     if (VALUE === undefined) throw new Error(`${KEY} 는 undefined 일 수 없습니다.`);
 
-    const VALUE_TARGETS: TALGORITHM[] = [
+    const VALUE_TARGETS: Algorithm[] = [
         "HS256",
         "HS384",
         "HS512",
