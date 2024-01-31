@@ -2,6 +2,11 @@ export const NOT_FOUND_URL_STATUS_CODE = 499;
 
 export enum ECustomExceptionCode {
 
+  /** 중복된 아이디 */ 'USER-001' = 'USER-001',
+
+  /** 비밀번호 불일치 */ 'INCORECT-PWD' = 'INCORECT-PWD',
+  /** DB 비밀번호 불일치 */ 'INCORECT-DB-PWD' = 'INCORECT-DB-PWD',
+
   'AWS-RDS-EXCEPTION' = 'AWS-RDS-EXCEPTION',
 
   /** MARIA DB Pool 또는 Connection 관련 에러 */

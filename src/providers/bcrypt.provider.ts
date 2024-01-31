@@ -34,7 +34,7 @@ export class BcryptProvider {
         }
     };
 
-    public async matchedPassword(password: string, passwordCheck: string): Promise<boolean> {
+    public matchedPassword(password: string, passwordCheck: string): boolean {
 
         return password !== passwordCheck ? false : true
         

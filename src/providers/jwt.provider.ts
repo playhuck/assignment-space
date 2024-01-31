@@ -8,7 +8,7 @@ import { ECustomExceptionCode } from '@models/enums/e.exception.code';
 import { IJWT_ENV } from '@models/interfaces/i.config';
 
 declare module "jsonwebtoken" {
-    export type CustomTokenType = "AccessToken"
+    export type CustomTokenType = "AccessToken" | "RefreshToken";
 
     export interface ICustomPayload extends jwt.JwtPayload {
         type: CustomTokenType;
@@ -21,6 +21,11 @@ declare module "jsonwebtoken" {
     }
 
     export interface IJwtReportPayload extends ICustomPayload {
+    }
+
+    export interface IRefreshTokenPayload extends ICustomPayload {
+        type: "RefreshToken";
+        userId: number;
     }
 
 };
@@ -58,6 +63,28 @@ export class JwtProvider {
             }
         )
     };
+
+    public signRefreshToken(payload: jwt.IRefreshTokenPayload): string {
+
+        const {
+            JWT_REFRESH_EXPIRED_IN,
+            JWT_ALGORITHM,
+            JWT_PRIVATE_PEM_KEY,
+            JWT_PASSPHRASE
+        } = this.JWT_ENV;
+
+        return jwt.sign(
+            payload,
+            {
+                key: JWT_PRIVATE_PEM_KEY,
+                passphrase: JWT_PASSPHRASE,
+            },
+            {
+                expiresIn: JWT_REFRESH_EXPIRED_IN,
+                algorithm: JWT_ALGORITHM,
+            },
+        );
+    }
 
     public extractToken(bearerToken: string): string {
         return bearerToken.substring(7);

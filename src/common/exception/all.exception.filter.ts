@@ -8,17 +8,20 @@ import {
 import { Request, Response } from 'express';
 import { IErrorResponse } from '@models/interfaces/i.error';
 import { CustomException } from './custom.exception';
-// import { LoggerService } from '@modules/utils/logger/logger.service';
 import { ECustomExceptionCode } from '@models/enums/e.exception.code';
+import { LoggerUtil } from '@utils/logger.util';
+import { TNODE_ENV } from '@models/types/t.node.env';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
 
-    constructor(
-        // private readonly logger: LoggerService
-    ) {
+    stage: TNODE_ENV;
+    logger: LoggerUtil | undefined;
 
-    }
+    constructor(stage: TNODE_ENV) {
+        this.stage = stage;
+        this.logger = stage === 'dev' ? new LoggerUtil() : undefined
+    };
 
     catch(exception: unknown, host: ArgumentsHost): void | CustomException {
         const ctx = host.switchToHttp();

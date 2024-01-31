@@ -16,14 +16,13 @@ const logLevelFormat = {
 }
 
 @Injectable()
-export class Logger {
+export class LoggerUtil {
     private envMode = getEnvMode('NODE_ENV');
     private isProduction = this.envMode === 'prod';
 
     private logger;
 
     constructor(
-        private readonly config: ConfigService
     ) {
         const level = this.isProduction ? 'info' : 'debug';
         
@@ -96,7 +95,7 @@ export class Logger {
 
     private _logPrintf = printf(({ timestamp, level, path, message, errorCode }) => {
         const formattedLogLevel = this._getFormattedLogLevel(level);
-
+        
         if (errorCode == null) {
             return `${timestamp} ${process.env.NODE_ENV} ${formattedLogLevel} ${path} ${message}`;
         }

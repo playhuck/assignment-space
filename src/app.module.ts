@@ -6,11 +6,14 @@ import { SpaceModule } from '@modules/space.module';
 import { UserModule } from '@modules/user.module';
 import { CustomConfigModule } from '@modules/config.module';
 import { CustomTypeOrmModule } from '@modules/typeorm.module';
+import { ProvidersModule } from '@modules/provider.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
     CustomConfigModule,
     CustomTypeOrmModule,
+    ProvidersModule,
     AuthModule,
     ChatModule,
     PostModule,

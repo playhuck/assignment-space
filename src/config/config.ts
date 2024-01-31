@@ -1,8 +1,9 @@
 import { IConfig } from "@models/interfaces/i.config";
-import { getEnvLiteralTypeValue, getEnvNum, getEnvStr, getPemKey } from "./config.private";
+import { getEnvLiteralTypeValue, getEnvMode, getEnvNum, getEnvStr, getPemKey } from "./config.private";
 
 export default (): IConfig => ({
-    PORT: getEnvNum('PORT') || 4000,
+    PORT: getEnvNum('PORT') || 3000,
+    STAGE: getEnvMode('STAGE'),
     JWT: {
         JWT_SECRET_KEY: getEnvStr('JWT_SECRET_KEY'),
         JWT_ACCESS_EXPIRED_IN: getEnvStr('JWT_ACCESS_EXPIRED_IN'),

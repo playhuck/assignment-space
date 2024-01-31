@@ -1,7 +1,9 @@
+import { TNODE_ENV } from '@models/types/t.node.env';
 import { Algorithm } from 'jsonwebtoken';
 
 export interface IConfig {
     PORT : number;
+    STAGE : TNODE_ENV;
     MYSQL_ENV: IMYSQL_ENV;
 
     JWT: IJWT_ENV;
