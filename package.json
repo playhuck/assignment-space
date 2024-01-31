@@ -29,7 +29,8 @@
     "module-alias": "^2.2.3",
     "reflect-metadata": "^0.1.12",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.17"
+    "typeorm": "^0.3.17",
+    "winston-daily-rotate-file": "^4.5.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.3.0",
@@ -60,7 +61,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
