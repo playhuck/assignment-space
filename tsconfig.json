@@ -16,6 +16,20 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
-  }
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@modules/*": ["src/modules/*"],
+      "@controllers/*": ["src/controllers/*"],
+      "@services/*": ["src/services/*"],
+      "@common/*": ["src/common/*"],
+      "@config/*": ["src/config/*"],
+      "@dtos/*": ["src/dtos/*"],
+      "@entities/*": ["src/entities/*"],
+      "@repositories/*": ["src/repositories/*"],
+      "@swaggers/*": ["src/swaggers/*"],
+      "@providers/*": ["src/providers/*"],
+      "@utils/*": ["src/utils/*"],
+      "@models/*": ["src/models/*"]
+    },
+  },
 }

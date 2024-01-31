@@ -67,6 +67,34 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@common/(.*)": "<rootDir>/src/common/$1",
+      "^@entities/(.*)": "<rootDir>/src/entities/$1",
+      "^@dtos/(.*)": "<rootDir>/src/dtos/$1",
+      "^@modules/(.*)": "<rootDir>/src/modules/$1",
+      "^@controllers/(.*)": "<rootDir>/src/controllers/$1",
+      "^@services/(.*)": "<rootDir>/src/services/$1",
+      "^@config/(.*)": "<rootDir>/src/config/$1",
+      "^@repositories/(.*)": "<rootDir>/src/repositories/$1",
+      "^@swaggers/(.*)": "<rootDir>/src/swaggers/$1",
+      "^@providers/(.*)": "<rootDir>/src/providers/$1",
+      "^@utils/(.*)": "<rootDir>/src/utils/$1",
+      "^@models/(.*)": "<rootDir>/src/models/$1"
+    }
+  },
+  "_moduleAliases": {
+    "@modules": "dist/modules",
+    "@controllers": "dist/controllers",
+    "@common": "dist/common",
+    "@entities": "dist/entities",
+    "@dtos": "dist/dtos",
+    "@config": "dist/config",
+    "@services": "dist/services",
+    "@repositories": "dist/repositories",
+    "@swaggers": "dist/swaggers",
+    "@providers": "dist/providers",
+    "@utils": "dist/utils",
+    "@models": "dist/models"
   }
 }
