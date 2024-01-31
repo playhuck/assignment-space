@@ -19,7 +19,7 @@ export class User {
         type: 'varchar',
         length: 128
     })
-    userEmail!: string;
+    email!: string;
 
     @Column({
         name: 'password', 

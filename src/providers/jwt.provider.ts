@@ -38,11 +38,23 @@ export class JwtProvider {
 
 
     public signAccessToken(payload: jwt.IAccessTokenPayload): string {
+
+        const {
+            JWT_ACCESS_EXPIRED_IN,
+            JWT_ALGORITHM,
+            JWT_PRIVATE_PEM_KEY,
+            JWT_PASSPHRASE
+        } = this.JWT_ENV;
+
         return jwt.sign(
-            payload, this.JWT_ENV.JWT_SECRET_KEY,
+            payload,
             {
-                expiresIn: '3d',
-                algorithm: 'HS256'
+                key: JWT_PRIVATE_PEM_KEY,
+                passphrase: JWT_PASSPHRASE
+            },
+            {
+                expiresIn: JWT_ACCESS_EXPIRED_IN,
+                algorithm: JWT_ALGORITHM
             }
         )
     };
@@ -53,12 +65,14 @@ export class JwtProvider {
 
     public verifyToken<T extends jwt.ICustomPayload>(token: string): T {
 
+        const {
+            JWT_PUBLIC_PEM_KEY,
+            JWT_ALGORITHM
+        } = this.JWT_ENV;
         try {
-            return <T>jwt.verify(token, this.JWT_ENV.JWT_SECRET_KEY,
-                {
-                    algorithms: ['HS256'],
-                }
-            );
+            return <T>jwt.verify(token, JWT_PUBLIC_PEM_KEY, {
+                algorithms: [JWT_ALGORITHM],
+            });
 
         } catch (err) {
 
