@@ -1,6 +1,6 @@
 export interface IConfig {
     PORT : number;
-    MARIA_ENV: IMYSQL_ENV;
+    MYSQL_ENV: IMYSQL_ENV;
 
     JWT: IJWT_ENV;
 };

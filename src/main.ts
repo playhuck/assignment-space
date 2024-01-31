@@ -11,6 +11,7 @@ import { AllExceptionsFilter } from '@common/exception/all.exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+  const port = config.get('PORT', 4000);
 
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
@@ -18,9 +19,19 @@ async function bootstrap() {
       throw new CustomValidationPipeException(e)
     }
   }));
-  app.useGlobalFilters(new AllExceptionsFilter())
-  app.useGlobalInterceptors(new HttpResponseInterceptor())
+  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalInterceptors(new HttpResponseInterceptor());
+
+  app.enableCors({
+    origin: '*',
+    exposedHeaders: ['Authorization']
+  });
+
+  app.setGlobalPrefix('/api');
+
+  await app.listen(port, () =>
+    console.log(`\nServer is running on ${port}`)
+  );
   
-  await app.listen(3000);
 }
 bootstrap();

@@ -22,17 +22,23 @@ export class User {
     userEmail!: string;
 
     @Column({
-        name: 'password', type: 'varchar', length: 50
+        name: 'password', 
+        type: 'varchar', 
+        length: 50
     })
     password!: string;
 
     @Column({
-        name: 'last_name', type: 'varchar', length: 50
+        name: 'last_name', 
+        type: 'varchar', 
+        length: 50
     })
     lastName!: string;
 
     @Column({
-        name: 'first_name', type: 'varchar', length: 50
+        name: 'first_name', 
+        type: 'varchar', 
+        length: 50
     })
     firstName!: string;
 
