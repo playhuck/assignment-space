@@ -14,7 +14,7 @@ export class HttpResponseInterceptor implements NestInterceptor {
         this.stage = stage;
         this.logger = stage === 'dev' ? new LoggerUtil() : undefined as unknown as LoggerUtil;
     };
-    
+
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         return next.handle().pipe(
             map(data => {
@@ -26,12 +26,15 @@ export class HttpResponseInterceptor implements NestInterceptor {
 
                     if ('tokens' in data) {
                         const { tokens, ...datas } = data;
-                        const { accessToken, refreshToken } = tokens;
-                        const bearerToken = `Bearer ${accessToken}`;
-                        res.header('Authorization', bearerToken);
-                        res.setHeader('Set-Cookie', [
-                            `refreshToken=${refreshToken}; HttpOnly; Secure; Path=/;`,
-                        ]);
+                        if (tokens?.accessToken) {
+                            const bearerToken = `Bearer ${tokens.accessToken}`;
+                            res.header('Authorization', bearerToken);
+                        }
+
+                        if (tokens?.accessToken && tokens?.refreshToken)
+                            res.setHeader('Set-Cookie', [
+                                `refreshToken=${tokens.refreshToken}; HttpOnly; Secure; Path=/;`,
+                            ]);
 
                         return { isSuccess: true, ...datas };
                     } else {

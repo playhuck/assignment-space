@@ -14,20 +14,40 @@ export class UserRepository extends Repository<User> {
         super(baseRepository.target, baseRepository.manager, baseRepository.queryRunner)
     };
 
+    async getUserById(
+        userId: number
+    ){
+
+        const user = await this.findOne({
+            where: {
+                userId
+            },
+            select: {
+                email: true,
+                firstName: true,
+                lastName: true,
+                profileImage: true
+            }
+        });
+
+        return user;
+    }
+
     async getAuthentificData(email: string) {
 
-        const result = await this.findOne({
+        const user = await this.findOne({
             where: {
                 email
             },
             select: {
                 email: true,
                 password: true,
-                userId: true
+                userId: true,
+                refreshToken: true
             }
         });
 
-        return result;
+        return user;
     };
 
     async insertUserEntity(
@@ -51,5 +71,33 @@ export class UserRepository extends Repository<User> {
 
         return insert
 
+    };
+
+    async updateUserRefresh(
+        entityManager: EntityManager,
+        userId: number,
+        refreshToken: string
+    ){
+
+        const update = await entityManager.update(User, {
+            userId
+        }, {
+            refreshToken
+        });
+
+        return update;
+    };
+
+    async clearUserRefresh(
+        entityManager: EntityManager,
+        userId: number
+    ){
+        const update = await entityManager.update(User, {
+            userId
+        }, {
+            refreshToken: null
+        });
+
+        return update;
     }
 }

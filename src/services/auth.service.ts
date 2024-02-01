@@ -45,7 +45,7 @@ export class AuthService {
                         400
                     );
                 };
-                
+
                 const matched = this.bcrypt.matchedPassword(
                     password,
                     passwordCheck
@@ -57,9 +57,9 @@ export class AuthService {
                         400
                     );
                 };
-                
+
                 const hashedPassword = await this.bcrypt.hashPassword(password);
-                
+
                 const insertUserEntity = await this.userRepo.insertUserEntity(
                     entityManager,
                     body,
@@ -72,7 +72,7 @@ export class AuthService {
                         500
                     )
                 };
-                
+
             }, { body });
 
     };
@@ -81,44 +81,109 @@ export class AuthService {
         body: PostSignInDto
     ) {
 
-        const { email, password } = body;
+        const tokens = await this.db.transaction(
+            async (entityManager: EntityManager, args) => {
 
-        const getAuthentificData = await this.userRepo.getAuthentificData(email);
-        if (!getAuthentificData) {
-            throw new CustomException(
-                "존재하지 않는 유저입니다.",
-                ECustomExceptionCode['USER-002'],
-                400
-            );
-        };
-        
-        const compared = await this.bcrypt.comparedPassword(
-            password,
-            getAuthentificData.password
-        );
-        
-        if (!compared) {
-            throw new CustomException(
-                "비밀번호가 일치하지 않습니다.",
-                ECustomExceptionCode['INCORECT-DB-PWD'],
-                400
-            );
-        };
+                const { email, password } = args.body;
+
+                const getAuthentificData = await this.userRepo.getAuthentificData(email);
+                if (!getAuthentificData) {
+                    throw new CustomException(
+                        "존재하지 않는 유저입니다.",
+                        ECustomExceptionCode['USER-002'],
+                        400
+                    );
+                };
+                
+                if (getAuthentificData?.refreshToken) {
+                    throw new CustomException(
+                        "중복 로그인은 허용되지 않습니다.",
+                        ECustomExceptionCode["USER-003"],
+                        401
+                    )
+                };
+
+                const compared = await this.bcrypt.comparedPassword(
+                    password,
+                    getAuthentificData.password
+                );
+
+                if (!compared) {
+                    throw new CustomException(
+                        "비밀번호가 일치하지 않습니다.",
+                        ECustomExceptionCode['INCORECT-DB-PWD'],
+                        400
+                    );
+                };
+
+                const accessToken = this.jwt.signAccessToken({
+                    type: 'AccessToken',
+                    userId: getAuthentificData.userId
+                });
+
+                const refreshToken = this.jwt.signRefreshToken({
+                    type: 'RefreshToken',
+                    userId: getAuthentificData.userId
+                });
+
+                const updateUserRefresh = await this.userRepo.updateUserRefresh(
+                    entityManager,
+                    getAuthentificData.userId,
+                    refreshToken
+                );
+                if (updateUserRefresh.affected !== 1) {
+                    throw new CustomException(
+                        "REFRESH 토큰 저장 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+
+                return {
+                    accessToken,
+                    refreshToken
+                }
+
+            }, { body });
+
+        return tokens;
+
+    };
+
+    async getAccessToken(
+        userId: number
+    ) {
 
         const accessToken = this.jwt.signAccessToken({
             type: 'AccessToken',
-            userId: getAuthentificData.userId
+            userId
         });
 
-        const refreshToken = this.jwt.signRefreshToken({
-            type: 'RefreshToken',
-            userId: getAuthentificData.userId
-        });
-
-        return {
-            accessToken,
-            refreshToken
-        }
+        return { accessToken };
 
     };
+
+    async clearRefreshToken(
+        userId: number
+    ) {
+
+        await this.db.transaction(
+            async (entityManager: EntityManager, args) => {
+
+                const { userId } = args;
+
+                const clearRefreshToken = await this.userRepo.clearUserRefresh(
+                    entityManager, 
+                    userId
+                );
+                if (clearRefreshToken.affected !== 1) {
+                    throw new CustomException(
+                        "REFRESH 토큰을 비우지 못했습니다.",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+
+            }, { userId })
+    }
 }

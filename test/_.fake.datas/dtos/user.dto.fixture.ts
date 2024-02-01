@@ -48,5 +48,9 @@ export class UserDtoFixture {
 
     get generateRandomPassword() {
         return faker.random.alphaNumeric(8);
+    };
+
+    get generateRandomNumber() {
+        return faker.datatype.number();
     }
 }
