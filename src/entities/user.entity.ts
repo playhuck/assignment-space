@@ -11,7 +11,10 @@ import {
 @Index('index_email')
 export class User {
 
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn({
+        name: 'user_id',
+        type: 'int'
+    })
     userId!: number;
 
     @Column({

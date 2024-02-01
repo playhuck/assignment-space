@@ -15,10 +15,9 @@ export class BcryptProvider {
 
     public async hashPassword(inputPassword: string): Promise<string> {
         try {
-
             const salt = await bcrypt.genSalt(+this.SALT);
 
-            return await bcrypt.hash(inputPassword, +salt);
+            return await bcrypt.hash(inputPassword, salt);
         } catch (err) {
 
             throw err;

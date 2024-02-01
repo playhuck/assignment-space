@@ -16,8 +16,7 @@ declare module "jsonwebtoken" {
 
     export interface IAccessTokenPayload extends ICustomPayload {
         type: CustomTokenType;
-        staffId: number;
-        account: string;
+        userId: number;
     }
 
     export interface IJwtReportPayload extends ICustomPayload {

@@ -16,11 +16,20 @@ export class AuthController {
     @Post('/sign-up')
     async signUp(
         @Body() body: PostSignUpDto
-    ){};
+    ){
+
+        void await this.service.signUp(body);
+
+    };
 
     @Post('/sign-in')
     async signIn(
         @Body() body: PostSignInDto
-    ){};
+    ){
+
+        const tokens = await this.service.signIn(body);
+
+        return { tokens };
+    };
     
 }

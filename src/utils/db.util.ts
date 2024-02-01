@@ -30,7 +30,7 @@ export class DbUtil {
 
             } catch (e) {
 
-                console.log("야옹:", e);
+                // console.log("SERVER ERROR:", e);
                 
                 
                 await queryRunner.rollbackTransaction();

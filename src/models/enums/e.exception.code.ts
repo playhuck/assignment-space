@@ -2,7 +2,8 @@ export const NOT_FOUND_URL_STATUS_CODE = 499;
 
 export enum ECustomExceptionCode {
 
-  /** 중복된 아이디 */ 'USER-001' = 'USER-001',
+  /** 중복된 아이디입니다. */ 'USER-001' = 'USER-001',
+  /** 존재하지 않는 유저입니다. */ 'USER-002' = 'USER-002',
 
   /** 비밀번호 불일치 */ 'INCORECT-PWD' = 'INCORECT-PWD',
   /** DB 비밀번호 불일치 */ 'INCORECT-DB-PWD' = 'INCORECT-DB-PWD',

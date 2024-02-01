@@ -1,6 +1,7 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { ServerResponse } from 'http';
 
 @Injectable()
 export class HttpResponseInterceptor implements NestInterceptor {
@@ -8,12 +9,16 @@ export class HttpResponseInterceptor implements NestInterceptor {
         return next.handle().pipe(
             map(data => {
                 if (data) {
-                    const httpRes = context.switchToHttp().getResponse();
+                    const res: ServerResponse = context.switchToHttp().getResponse();
 
-                    if ('signUp' in data) {
-                        const { login, ...datas } = data;
+                    if ('tokens' in data) {
+                        const { accessToken, refreshToken, ...datas } = data;
                         const bearerToken = `Bearer ${data['signUp']}`;
-                        httpRes.header('Authorization', bearerToken);
+                        res.setHeader('Authorization', bearerToken);
+                        res.setHeader('Set-Cookie', [
+                            `yourCookieName=${refreshToken}; HttpOnly; Secure; Path=/;`,
+                        ]);
+
                         return { isSuccess: true, ...datas };
                     } else {
                         return { isSuccess: true, ...data };

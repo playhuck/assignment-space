@@ -1,9 +1,28 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": ".",
-  "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
+  "testRegex": ".*\\.spec\\.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "isolatedModules": true
+      }
+    ]
+  },
+  "testEnvironment": "node",
+  "moduleNameMapper": {
+    "^@common/(.*)": "<rootDir>/src/common/$1",
+    "^@entities/(.*)": "<rootDir>/src/entities/$1",
+    "^@dtos/(.*)": "<rootDir>/src/dtos/$1",
+    "^@modules/(.*)": "<rootDir>/src/modules/$1",
+    "^@controllers/(.*)": "<rootDir>/src/controllers/$1",
+    "^@services/(.*)": "<rootDir>/src/services/$1",
+    "^@config/(.*)": "<rootDir>/src/config/$1",
+    "^@repositories/(.*)": "<rootDir>/src/repositories/$1",
+    "^@swaggers/(.*)": "<rootDir>/src/swaggers/$1",
+    "^@providers/(.*)": "<rootDir>/src/providers/$1",
+    "^@utils/(.*)": "<rootDir>/src/utils/$1",
+    "^@models/(.*)": "<rootDir>/src/models/$1"
   }
 }
