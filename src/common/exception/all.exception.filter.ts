@@ -16,17 +16,25 @@ import { TNODE_ENV } from '@models/types/t.node.env';
 export class AllExceptionsFilter implements ExceptionFilter {
 
     stage: TNODE_ENV;
-    logger: LoggerUtil | undefined;
+    logger: LoggerUtil;
 
     constructor(stage: TNODE_ENV) {
         this.stage = stage;
-        this.logger = stage === 'dev' ? new LoggerUtil() : undefined
+        this.logger = stage === 'dev' ? new LoggerUtil() : undefined as unknown as LoggerUtil;
     };
 
     catch(exception: unknown, host: ArgumentsHost): void | CustomException {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
         const request = ctx.getRequest<Request>();
+
+        if (exception instanceof CustomException) {
+            this.logger.warn(request.originalUrl, exception.message, exception.errorCode);
+        } else if (exception instanceof HttpException) {
+            this.logger.error(request.originalUrl, exception["message"], exception["statusCode"]);
+        } else {
+            this.logger.error(request.originalUrl, exception);
+        }
 
         response
             .status(this.statusCode(exception))

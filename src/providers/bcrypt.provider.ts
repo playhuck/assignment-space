@@ -15,9 +15,11 @@ export class BcryptProvider {
 
     public async hashPassword(inputPassword: string): Promise<string> {
         try {
-            const salt = await bcrypt.genSalt(+this.SALT);
 
-            return await bcrypt.hash(inputPassword, salt);
+            const hashedPassword = await bcrypt.hash(inputPassword, +this.SALT);
+
+            return hashedPassword;
+
         } catch (err) {
 
             throw err;
@@ -28,6 +30,7 @@ export class BcryptProvider {
         try {
 
             return await bcrypt.compare(inputPassword, existPassword);
+
         } catch (err) {
             throw err;
         }
@@ -36,13 +39,13 @@ export class BcryptProvider {
     public matchedPassword(password: string, passwordCheck: string): boolean {
 
         return password !== passwordCheck ? false : true
-        
+
     };
 
     public async matchedPwdRegEx(
         staffPassword: string,
         staffPasswordCheck: string
-    ){
+    ) {
 
         const passwordRegex = new RegExp(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/);
 

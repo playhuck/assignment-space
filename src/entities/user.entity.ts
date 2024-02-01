@@ -27,7 +27,7 @@ export class User {
     @Column({
         name: 'password', 
         type: 'varchar', 
-        length: 50
+        length: 128
     })
     password!: string;
 

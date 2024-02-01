@@ -36,7 +36,7 @@ export class AuthService {
                     password,
                     passwordCheck
                 } = args.body;
-                
+
                 const getAuthentificData = await this.userRepo.getAuthentificData(email);
                 if (getAuthentificData) {
                     throw new CustomException(
@@ -45,7 +45,7 @@ export class AuthService {
                         400
                     );
                 };
-
+                
                 const matched = this.bcrypt.matchedPassword(
                     password,
                     passwordCheck
@@ -57,9 +57,9 @@ export class AuthService {
                         400
                     );
                 };
-
+                
                 const hashedPassword = await this.bcrypt.hashPassword(password);
-
+                
                 const insertUserEntity = await this.userRepo.insertUserEntity(
                     entityManager,
                     body,
@@ -72,7 +72,7 @@ export class AuthService {
                         500
                     )
                 };
-
+                
             }, { body });
 
     };
@@ -100,7 +100,7 @@ export class AuthService {
         if (!compared) {
             throw new CustomException(
                 "비밀번호가 일치하지 않습니다.",
-                ECustomExceptionCode['USER-002'],
+                ECustomExceptionCode['INCORECT-DB-PWD'],
                 400
             );
         };

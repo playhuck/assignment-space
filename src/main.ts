@@ -24,7 +24,7 @@ async function bootstrap() {
   }));
 
   app.useGlobalFilters(new AllExceptionsFilter(stage))
-  app.useGlobalInterceptors(new HttpResponseInterceptor());
+  app.useGlobalInterceptors(new HttpResponseInterceptor(stage));
 
   app.enableCors({
     origin: '*',

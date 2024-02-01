@@ -4,7 +4,6 @@ import { format } from 'logform';
 const { combine, printf } = format;
 import { getEnvMode } from '@config/config.private';
 import { Injectable } from "@nestjs/common";
-import { ConfigService } from '@nestjs/config';
 
 const chalk = require('chalk');
 

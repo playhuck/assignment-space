@@ -10,6 +10,10 @@
       }
     ]
   },
+  "collectCoverageFrom": [
+    "<rootDir>/src/controllers/*.controller.ts",
+    "<rootDir>/src/services/*.service.ts"
+  ],
   "testEnvironment": "node",
   "moduleNameMapper": {
     "^@common/(.*)": "<rootDir>/src/common/$1",
@@ -24,5 +28,6 @@
     "^@providers/(.*)": "<rootDir>/src/providers/$1",
     "^@utils/(.*)": "<rootDir>/src/utils/$1",
     "^@models/(.*)": "<rootDir>/src/models/$1"
-  }
+  },
+  "globalTeardown": "<rootDir>/test/_.db/clear.ts"
 }

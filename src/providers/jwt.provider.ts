@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import jwt from 'jsonwebtoken';
+import jwt, { CustomTokenType } from 'jsonwebtoken';
 
 import { CustomException } from '@common/exception/custom.exception';
 
@@ -109,5 +109,24 @@ export class JwtProvider {
             );
         }
     };
+
+    public verifyExp(
+        token: jwt.ICustomPayload,
+        type: CustomTokenType
+        ) {
+
+        const expirationTimeInSeconds = token.exp!;
+        const expirationDate = new Date(expirationTimeInSeconds * 1000);
+
+        const currentTime = new Date();
+        const timeDifferenceInSeconds = Math.floor((expirationDate.getTime() - currentTime.getTime()) / 1000);
+        console.log(timeDifferenceInSeconds);
+        
+        if(type === 'AccessToken'){
+            return timeDifferenceInSeconds <= 3540 ? false : true
+        } else {
+            return timeDifferenceInSeconds <= 2524740 ? false : true
+        }
+    }
 
 }

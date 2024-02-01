@@ -1,5 +1,8 @@
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { DataSource, EntityManager } from "typeorm";
+import mysql, { Connection } from 'mysql2';
+import { IMYSQL_ENV } from "@models/interfaces/i.config";
 
 export type ServiceLogicFunction<T, Ps> = (manager: EntityManager, managerArgs: Ps) => Promise<T>;
 
@@ -8,9 +11,10 @@ export class DbUtil {
 
     constructor(
         protected readonly dataSource: DataSource
-    ) { }
+    ) {
+    }
 
-    async transaction<T, U>(f: ServiceLogicFunction<T, U>, args : U) {
+    async transaction<T, U>(f: ServiceLogicFunction<T, U>, args: U) {
 
         try {
             const queryRunner = this.dataSource.createQueryRunner();
@@ -31,8 +35,8 @@ export class DbUtil {
             } catch (e) {
 
                 // console.log("SERVER ERROR:", e);
-                
-                
+
+
                 await queryRunner.rollbackTransaction();
                 await queryRunner.release();
 
@@ -46,7 +50,8 @@ export class DbUtil {
         }
     };
 
-    async dataSourceProperty(){
+    async dataSourceProperty() {
         return this.dataSource;
-    }
+    };
+
 }
