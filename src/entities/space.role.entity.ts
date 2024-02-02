@@ -1,10 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Space } from './space.entity';
-import { User } from './user.entity';
 import { SpaceUserRole } from './space.user.role.entity';
+import { CustomBaseEntity } from './base.entity';
 
 @Entity('space_role')
-export class SpaceRole {
+export class SpaceRole extends CustomBaseEntity {
     @PrimaryGeneratedColumn({
         name: 'space_role_id',
         type: 'int'
@@ -97,10 +97,6 @@ export class SpaceRole {
     @ManyToOne(() => Space, space => space.spaceId)
     @JoinColumn({ name: 'space_id' })
     space!: Space;
-
-    @ManyToOne(() => User, user => user.userId)
-    @JoinColumn({ name: 'user_id' })
-    user!: User;
 
     @OneToMany(() => SpaceUserRole, (spaceUserRole) => spaceUserRole.spaceRole)
     spaceUserRoles!: SpaceUserRole[];

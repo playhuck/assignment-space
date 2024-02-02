@@ -11,7 +11,6 @@
     ]
   },
   "collectCoverageFrom": [
-    "<rootDir>/src/controllers/*.controller.ts",
     "<rootDir>/src/services/*.service.ts"
   ],
   "testEnvironment": "node",

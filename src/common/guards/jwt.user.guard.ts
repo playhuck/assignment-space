@@ -1,10 +1,9 @@
+
 import {
     CanActivate,
     ExecutionContext,
     Injectable,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Request } from 'express';
 
 import { JwtProvider } from '@providers/jwt.provider';
@@ -16,7 +15,7 @@ import {
 import { UserRepository } from '@repositories/user.repository';
 
 @Injectable()
-export class JwtRefreshGuard implements CanActivate {
+export class JwtUserGuard implements CanActivate {
     constructor(
         private jwt: JwtProvider,
         private readonly userRepo: UserRepository
@@ -25,9 +24,9 @@ export class JwtRefreshGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request: Request = await context.switchToHttp().getRequest();
         const response: Response = await context.switchToHttp().getResponse();
-        
-        const refreshToken = request?.headers?.cookie?.split('=')[1];
-        if (!refreshToken) {
+
+        const token = this.extractTokenFromHeader(request);
+        if (!token) {
             throw new CustomException(
                 'JWT 토큰이 누락되었습니다.',
                 ECustomExceptionCode['JWT-001'],
@@ -35,17 +34,17 @@ export class JwtRefreshGuard implements CanActivate {
             );
         }
         
-        const payload = await this.jwt.refreshVerifyToken(refreshToken);
-        if (payload['type'] !== 'RefreshToken') {
+        const payload = this.jwt.verifyToken(token);
+        if (payload['type'] !== 'AccessToken') {
             throw new CustomException(
-                "REFRESH 토큰타입이 아닙니다.",
+                "ACCESS 토큰타입이 아닙니다.",
                 ECustomExceptionCode["JWT-002"],
                 401
             )
         };
 
         const user = await this.userRepo.getUserById(payload['userId']);
-        if (!user){
+        if (!user) {
             throw new CustomException(
                 "존재하지 않는 유저입니다.",
                 ECustomExceptionCode["USER-002"],
@@ -56,6 +55,11 @@ export class JwtRefreshGuard implements CanActivate {
         response["userId"] = payload['userId'];
 
         return true;
+    };
+
+    private extractTokenFromHeader(request: Request): string | undefined {
+        const [type, token] = request.headers.authorization?.split(' ') ?? [];
+        return type === 'Bearer' ? token : undefined;
     }
 
 }

@@ -30,15 +30,20 @@ export class S3Provider {
     };
 
     async getPresignedUrl(
-        key: string,
+        userId: number,
+        spaceId: number,
+        prefix: string,
         fileExtension: TFileExtension
     ) {
         const { BUCKET_NAME } = this.S3_ENV;
 
+        const key = `${userId}/${spaceId}/${prefix}`;
+
         const contentType = fileExtension === 'image' ?
             'image/*' : fileExtension === 'file' ?
                 'multipart/form-data' :
-                'application/octet-stream'
+                'application/octet-stream';
+                
         const command = new PutObjectCommand({ Bucket: BUCKET_NAME, Key: key, ContentType: contentType });
 
         return await getSignedUrl(

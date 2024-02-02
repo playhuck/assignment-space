@@ -1,9 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column } from 'typeorm';
 import { SpaceRole } from './space.role.entity';
 import { User } from './user.entity';
+import { CustomBaseEntity } from './base.entity';
 
 @Entity('space_user_role')
-export class SpaceUserRole {
+export class SpaceUserRole extends CustomBaseEntity {
     @PrimaryGeneratedColumn({
         name: 'space_user_role_id',
         type: 'int',

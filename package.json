@@ -83,7 +83,6 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "<rootDir>/src/controllers/*.controller.ts",
       "<rootDir>/src/services/*.service.ts"
     ],
     "coverageDirectory": "../coverage",

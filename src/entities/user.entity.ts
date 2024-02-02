@@ -53,8 +53,7 @@ export class User extends CustomBaseEntity {
     @Column({
         name: 'profile_image',
         type: 'varchar',
-        length: 128,
-        default: 'default_image.jpg'
+        length: 128
     })
     profileImage!: string;
 
@@ -68,9 +67,6 @@ export class User extends CustomBaseEntity {
 
     @OneToMany(() => Space, (space) => space.user)
     spaces!: Space[];
-
-    @OneToMany(() => SpaceRole, (spaceRole) => spaceRole.user)
-    spaceRoles!: SpaceRole[];
 
     @OneToMany(() => SpaceUserRole, (spaceUserRole) => spaceUserRole.user)
     spaceUserRoles!: SpaceUserRole[];

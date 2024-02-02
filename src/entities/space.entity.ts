@@ -33,6 +33,22 @@ export class Space extends CustomBaseEntity {
     })
     spaceLogo!: string;
 
+    @Column({
+        name: 'space_admin_code',
+        type: 'varchar',
+        length: 30,
+        nullable: false
+    })
+    adminCode!: string;
+
+    @Column({
+        name: 'space_joiner_code',
+        type: 'varchar',
+        length: 30,
+        nullable: false
+    })
+    joinerCode!: string;
+
     @ManyToOne(() => User, user => user.userId)
     @JoinColumn({ name: 'user_id' })
     user!: User;

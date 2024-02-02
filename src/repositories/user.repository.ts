@@ -3,22 +3,21 @@ import { Repository, DataSource, EntityManager } from "typeorm";
 
 import { User } from "@entities/user.entity";
 import { PostSignUpDto } from "@dtos/auths/post.sign.up.dto";
+import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
-export class UserRepository extends Repository<User> {
+export class UserRepository {
 
     constructor(
-        private readonly dataSource: DataSource
+        @InjectRepository(User) private userRepo: Repository<User>
     ) {
-        const baseRepository = dataSource.getRepository(User);
-        super(baseRepository.target, baseRepository.manager, baseRepository.queryRunner)
     };
 
     async getUserById(
         userId: number
     ){
 
-        const user = await this.findOne({
+        const user = await this.userRepo.findOne({
             where: {
                 userId
             },
@@ -35,7 +34,7 @@ export class UserRepository extends Repository<User> {
 
     async getAuthentificData(email: string) {
 
-        const user = await this.findOne({
+        const user = await this.userRepo.findOne({
             where: {
                 email
             },
