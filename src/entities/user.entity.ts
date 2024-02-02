@@ -66,12 +66,12 @@ export class User extends CustomBaseEntity {
     })
     refreshToken?: string | null;
 
-    @OneToMany(() => Space, space => space.user)
+    @OneToMany(() => Space, (space) => space.user)
     spaces!: Space[];
 
-    @OneToMany(() => SpaceRole, spaceRole => spaceRole.user)
+    @OneToMany(() => SpaceRole, (spaceRole) => spaceRole.user)
     spaceRoles!: SpaceRole[];
 
-    @OneToMany(() => SpaceUserRole, spaceUserRole => spaceUserRole.user)
+    @OneToMany(() => SpaceUserRole, (spaceUserRole) => spaceUserRole.user)
     spaceUserRoles!: SpaceUserRole[];
 }

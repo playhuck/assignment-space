@@ -37,6 +37,6 @@ export class Space extends CustomBaseEntity {
     @JoinColumn({ name: 'user_id' })
     user!: User;
 
-    @OneToMany(() => SpaceRole, role => role.spaceId)
+    @OneToMany(() => SpaceRole, role => role.space)
     spaceRoles!: SpaceRole[];
 }

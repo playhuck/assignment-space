@@ -2,6 +2,7 @@ import { User } from '@entities/user.entity';
 import { Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BcryptProvider } from '@providers/bcrypt.provider';
+import { DayjsProvider } from '@providers/dayjs.provider';
 import { JwtProvider } from '@providers/jwt.provider';
 import { S3Provider } from '@providers/s3.provider';
 import { UserRepository } from '@repositories/user.repository';
@@ -21,6 +22,7 @@ import { LoggerUtil } from '@utils/logger.util';
 
         BcryptProvider,
         JwtProvider,
+        DayjsProvider,
 
         S3Provider,
 
@@ -32,6 +34,7 @@ import { LoggerUtil } from '@utils/logger.util';
 
         BcryptProvider,
         JwtProvider,
+        DayjsProvider,
 
         S3Provider,
 
