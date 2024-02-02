@@ -2,11 +2,13 @@ import { TNODE_ENV } from '@models/types/t.node.env';
 import { Algorithm } from 'jsonwebtoken';
 
 export interface IConfig {
-    PORT : number;
-    STAGE : TNODE_ENV;
+    PORT: number;
+    STAGE: TNODE_ENV;
     MYSQL_ENV: IMYSQL_ENV;
 
     JWT: IJWT_ENV;
+
+    S3: IS3_ENV;
 };
 
 export interface IJWT_ENV {
@@ -26,4 +28,12 @@ export interface IMYSQL_ENV {
     username: string;
     password: string;
     database: string;
+};
+
+export interface IS3_ENV {
+
+    BUCKET_NAME: string;
+    ACCESS_KEY: string;
+    SECRET_KEY: string;
+    REGION: string;
 }

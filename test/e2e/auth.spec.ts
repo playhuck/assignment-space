@@ -17,6 +17,8 @@ import { PostSignUpDto } from '@dtos/auths/post.sign.up.dto';
 import { PostSignInDto } from '@dtos/auths/post.sign.in.dto';
 import { JwtProvider } from '@providers/jwt.provider';
 import { IAccessTokenPayload, IRefreshTokenPayload } from 'jsonwebtoken';
+import { Space } from '@entities/space.entity';
+import { SpaceRole } from '@entities/space.role.entity';
 
 describe('User Authentication Test', () => {
 
@@ -230,7 +232,10 @@ describe('User Authentication Test', () => {
                 ...dto,
                 refreshToken: ' ',
                 profileImage: ' ',
-                userId: 1
+                userId: 1,
+                spaces: new Array(),
+                createdAt: ' ',
+                spaceRoles: []
             });
 
             try {
@@ -409,11 +414,13 @@ describe('User Authentication Test', () => {
 
                     const { body }: {
                         body: {
-                            accessToken: string
+                            tokens: {
+                                accessToken: string
+                            }
                         }
                     } = res;
 
-                    expect(body.accessToken).toBeTruthy();
+                    expect(body.tokens.accessToken).toBeTruthy();
 
                     expect(jwtSpyOn).toHaveBeenCalledTimes(1);
                 })

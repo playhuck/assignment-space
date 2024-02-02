@@ -20,5 +20,11 @@ export default (): IConfig => ({
         username: getEnvStr('MYSQL_ENV_USER'),
         password: getEnvStr('MYSQL_ENV_PWD'),
         database: process.env.NODE_ENV === 'test' ? getEnvStr('MYSQL_ENV_TEST_DB_NAME') : getEnvStr('MYSQL_ENV_DB_NAME')
+    },
+    S3: {
+        ACCESS_KEY: getEnvStr('S3_ACCESS_KEY'),
+        SECRET_KEY: getEnvStr('S3_SECRET_KEY'),
+        BUCKET_NAME: getEnvStr('S3_BUCKET_NAME'),
+        REGION: getEnvStr('S3_REGION')
     }
 })

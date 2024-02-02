@@ -48,11 +48,12 @@ export class AuthController {
         return { tokens };
     };
 
+    @UseGuards(JwtRefreshGuard)
     @Patch('/sign-out')
     async clearRefreshToken(
         @UserId() userId: number
     ) {
-
+        
         void await this.service.clearRefreshToken(userId)
     }
 
