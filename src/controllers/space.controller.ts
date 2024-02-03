@@ -1,13 +1,28 @@
-import { User, UserId } from '@common/decorators/user.decorator';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    UseGuards
+} from '@nestjs/common';
+
+import { SpaceService } from '@services/space.service';
+
+import { User } from '@common/decorators/user.decorator';
+
 import { JwtUserGuard } from '@common/guards/jwt.user.guard';
 import { SpaceRoleGuard } from '@common/guards/space.role.guard';
-import { PostSpaceDto } from '@dtos/spaces/post.space.dto';
+
+import { PatchSpaceLogoDto } from '@dtos/spaces/patch.space.logo.dto';
+import { PatchSpaceNameDto } from '@dtos/spaces/patch.space.name.dto';
 import { PostSpaceJoinDto } from '@dtos/spaces/post.space.join.dto';
 import { SpaceParamDto } from '@dtos/spaces/space.param.dto';
 import { SpaceRoleParamDto } from '@dtos/spaces/space.role.param.dto';
+
 import { IUser } from '@models/interfaces/i.user';
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { SpaceService } from '@services/space.service';
 
 @UseGuards(JwtUserGuard)
 @Controller('space')
@@ -30,6 +45,7 @@ export class SpaceController {
         return { getPresignedUrl };
     };
 
+    /** 공간 참여 */
     @Post('/:spaceId/join')
     async postSpaceJoin(
         @User() user: IUser,
@@ -44,10 +60,26 @@ export class SpaceController {
         )
     }
 
-    /** 공간 수정 */
+    /** 공간 이름 수정 */
     @UseGuards(SpaceRoleGuard)
-    @Patch('/owner/:spaceId')
-    async updateSpace() { };
+    @Patch('/owner/:spaceId/name')
+    async updateSpaceName(
+        @Body() body: PatchSpaceNameDto,
+        @Param() param: SpaceParamDto
+    ) { };
+
+    /** 공간 로고 수정 */
+    @UseGuards(SpaceRoleGuard)
+    @Patch('/owner/:spaceId/logo')
+    async updateSpaceLogo(
+        @Body() body: PatchSpaceLogoDto,
+        @Param() param: SpaceParamDto
+    ) { };
+
+    /** 공간 구성원 역할 수정 */
+    @UseGuards(SpaceRoleGuard)
+    @Patch('/owner/:spaceId/role')
+    async updateSpaceRole() { };
 
     /** 소유권 할당 */
     @UseGuards(SpaceRoleGuard)

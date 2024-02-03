@@ -108,9 +108,9 @@ export class SpaceRole extends CustomBaseEntity {
     })
     spaceUserRoles!: SpaceUserRole[];
 
-    @OneToOne(() => SpaceRoleCode, {
+    @OneToOne(() => SpaceRoleCode, (roleCode) => roleCode.spaceRole, {
         onDelete: 'CASCADE',
         cascade: true
     })
-    spaceCodes!: SpaceRoleCode;
+    spaceRoleCodes!: SpaceRoleCode;
 }

@@ -484,7 +484,7 @@ describe('Space Test', () => {
             });
 
             await req
-                .patch(`/space/owner/${scenarioSpaceId}`)
+                .patch(`/space/owner/${scenarioSpaceId}/name`)
                 .set('Authorization', `Bearer ${dummyToken}`)
                 .query(query)
                 .then((res) => {
@@ -501,7 +501,7 @@ describe('Space Test', () => {
         it('소유자만 사용할 수 없음', async () => {
 
             await req
-                .patch(`/space/owner/${scenarioSpaceId}`)
+                .patch(`/space/owner/${scenarioSpaceId}/name`)
                 .set('Authorization', `Bearer ${secondAccessToken}`)
                 .query(query)
                 .then((res) => {

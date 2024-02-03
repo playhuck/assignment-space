@@ -33,7 +33,7 @@ export class SpaceRoleCode extends CustomBaseEntity {
     })
     code!: string;
 
-    @OneToOne(()=> SpaceRole, (role) => role.spaceCodes)
+    @OneToOne(()=> SpaceRole, (role) => role.spaceRoleCodes)
     @JoinColumn({ 
         name: 'space_role_id',
         referencedColumnName: 'spaceRoleId' 

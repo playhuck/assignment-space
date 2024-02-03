@@ -289,10 +289,17 @@ export class SpaceRepository {
         entityManager: EntityManager,
         spaceRoleId: number
     ){
-
-        const deleteSpaceRole = await entityManager.softDelete(SpaceRole, {
-            spaceRoleId
+        const spaceRoleRelation = await entityManager.findOne(SpaceRole, {
+            where: {
+                spaceRoleId
+            },
+            relations: [
+                'spaceUserRoles',
+                'spaceRoleCodes'
+            ]
         });
+
+        const deleteSpaceRole = await entityManager.softRemove(SpaceRole, spaceRoleRelation!);
 
         return deleteSpaceRole;
     };

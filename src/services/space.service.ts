@@ -22,6 +22,8 @@ import { OWNER, ADMIN_ROLE, NOT_ADMIN_ROLE } from '@common/constants/role.consta
 import { SpaceParamDto } from '@dtos/spaces/space.param.dto';
 import { PostSpaceJoinDto } from '@dtos/spaces/post.space.join.dto';
 import { SpaceRoleParamDto } from '@dtos/spaces/space.role.param.dto';
+import { PatchSpaceNameDto } from '@dtos/spaces/patch.space.name.dto';
+import { PatchSpaceLogoDto } from '@dtos/spaces/patch.space.logo.dto';
 
 @Injectable()
 export class SpaceService {
@@ -191,7 +193,7 @@ export class SpaceService {
                 const createdAt = this.dayjs.getDatetimeByOptions('YYYY-MM-DD HH:mm:ss');
 
                 const code = await this.spaceRepo.getSpaceRoleCodeByCode(joinCode);
-                if(!code){
+                if (!code) {
                     throw new CustomException(
                         "유효하지 않은 코드",
                         ECustomExceptionCode["SPACE-002"],
@@ -200,7 +202,7 @@ export class SpaceService {
                 };
 
                 const { spaceRoleId } = code;
-                
+
                 const insertSpaceUserRole = await this.spaceRepo.insertSpaceUserRole(
                     entityManager,
                     spaceId,
@@ -209,7 +211,7 @@ export class SpaceService {
                     createdAt
                 );
 
-                if(insertSpaceUserRole.generatedMaps.length !== 1){
+                if (insertSpaceUserRole.generatedMaps.length !== 1) {
                     throw new CustomException(
                         "공간 참여 실패",
                         ECustomExceptionCode["AWS-RDS-EXCEPTION"],
@@ -224,23 +226,46 @@ export class SpaceService {
         })
     }
 
-    async updateSpace(
-        spaceId: number
+    async updateSpaceName(
+        param: SpaceParamDto,
+        body: PatchSpaceNameDto
     ) {
 
         await this.db.transaction(
             async (entityManager, args) => {
 
-            }, { spaceId })
+                const { body, param } = args;
+
+                const updateSpaceName = await this.spaceRepo
+
+            }, {
+            param,
+            body
+        })
     };
+
+    async updateSpaceLogo(
+        param: SpaceParamDto,
+        body: PatchSpaceLogoDto
+    ) {
+
+        await this.db.transaction(
+            async (entityManager, args) => {
+
+            }, {
+            param,
+            body
+        })
+
+    }
 
     async updateSpaceRole() {
         await this.db.transaction(
-            async(entityManager: EntityManager, args) => {
+            async (entityManager: EntityManager, args) => {
 
-                const { } = args; 
+                const { } = args;
             }, {
-            }
+        }
         );
     }
 
@@ -255,7 +280,7 @@ export class SpaceService {
                 const { user, param } = args;
                 const { spaceId } = param;
                 const { userId } = user;
-                
+
                 /** 삭제의 경우 같은 검증 다시 한 번 */
                 const userRelation = await this.spaceRepo.getUserSpaceRelation(
                     spaceId,
@@ -273,7 +298,7 @@ export class SpaceService {
                     entityManager,
                     spaceId
                 );
-                
+
                 if (!deleteSpace?.deletedAt) {
                     throw new CustomException(
                         "공간 삭제에 실패",
@@ -294,13 +319,13 @@ export class SpaceService {
     ) {
 
         void await this.db.transaction(
-            async(entityManager: EntityManager, args) => {
+            async (entityManager: EntityManager, args) => {
 
                 const { param } = args;
                 const { spaceRoleId } = param;
-                
+
                 const isUsedSpaceRole = await this.spaceRepo.getSpaceUserRoleBySpaceRoleId(spaceRoleId);
-                if(isUsedSpaceRole){
+                if (isUsedSpaceRole) {
                     throw new CustomException(
                         "누군가 사용중인 역할",
                         ECustomExceptionCode["ROLE-002"],
@@ -312,17 +337,17 @@ export class SpaceService {
                     entityManager,
                     spaceRoleId
                 );
-                if(deleteSpaceRole.affected !== 1){
+                if (!deleteSpaceRole.deletedAt) {
                     throw new CustomException(
                         "역할 삭제중 문제가 발생",
                         ECustomExceptionCode['AWS-RDS-EXCEPTION'],
                         500
                     )
                 };
-                
+
             }, {
-                param
-            }
+            param
+        }
         )
     };
 

@@ -33,6 +33,9 @@ export class DbUtil {
                 return result;
 
             } catch (e) {
+
+                console.log("ERROR:", e);
+                
                 
                 await queryRunner.rollbackTransaction();
                 await queryRunner.release();
