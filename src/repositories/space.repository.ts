@@ -285,6 +285,36 @@ export class SpaceRepository {
         return insert;
     };
 
+    async updateSpaceName(
+        entityManager: EntityManager,
+        spaceId: number,
+        spaceName: string
+    ){
+
+        const updateSpaceName = await entityManager.update(Space, {
+            spaceId
+        }, {
+            spaceName
+        });
+
+        return updateSpaceName;
+    };
+
+    async updateSpaceLogo(
+        entityManager: EntityManager,
+        spaceId: number,
+        spaceLogo: string
+    ){
+
+        const updateSpaceLogo = await entityManager.update(Space, {
+            spaceId
+        }, {
+            spaceLogo
+        });
+
+        return updateSpaceLogo;
+    };
+
     async deleteSpaceRole(
         entityManager: EntityManager,
         spaceRoleId: number
@@ -323,6 +353,6 @@ export class SpaceRepository {
         const deleteSpace = await entityManager.softRemove(Space, spaceRelation!);
         
         return deleteSpace;
-    }
+    };
 
 }

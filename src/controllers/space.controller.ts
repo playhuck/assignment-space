@@ -66,15 +66,33 @@ export class SpaceController {
     async updateSpaceName(
         @Body() body: PatchSpaceNameDto,
         @Param() param: SpaceParamDto
-    ) { };
+    ) { 
+
+        void await this.service.updateSpaceName(
+            param,
+            body
+        );
+
+    };
 
     /** 공간 로고 수정 */
     @UseGuards(SpaceRoleGuard)
     @Patch('/owner/:spaceId/logo')
     async updateSpaceLogo(
+        @User() user: IUser,
         @Body() body: PatchSpaceLogoDto,
         @Param() param: SpaceParamDto
-    ) { };
+    ) { 
+
+        const getPresignedUrl = await this.service.updateSpaceLogo(
+            user,
+            param,
+            body
+        );
+
+        return { getPresignedUrl };
+        
+    };
 
     /** 공간 구성원 역할 수정 */
     @UseGuards(SpaceRoleGuard)

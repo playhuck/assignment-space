@@ -231,12 +231,25 @@ export class SpaceService {
         body: PatchSpaceNameDto
     ) {
 
-        await this.db.transaction(
+        void await this.db.transaction(
             async (entityManager, args) => {
 
                 const { body, param } = args;
+                const { spaceName } = body;
+                const { spaceId } = param;
 
-                const updateSpaceName = await this.spaceRepo
+                const updateSpaceName = await this.spaceRepo.updateSpaceName(
+                    entityManager,
+                    spaceId,
+                    spaceName
+                );
+                if (updateSpaceName.affected !== 1) {
+                    throw new CustomException(
+                        "공간 이름 수정 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
 
             }, {
             param,
@@ -245,19 +258,49 @@ export class SpaceService {
     };
 
     async updateSpaceLogo(
+        user: IUser,
         param: SpaceParamDto,
         body: PatchSpaceLogoDto
     ) {
 
-        await this.db.transaction(
+        const getPresignedUrl = await this.db.transaction(
             async (entityManager, args) => {
+
+                const { body, param, user } = args;
+                const { spaceLogo, spaceLogoExtension } = body;
+                const { spaceId } = param;
+
+                const updateSpaceLogo = await this.spaceRepo.updateSpaceLogo(
+                    entityManager,
+                    spaceId,
+                    spaceLogo
+                );
+                if (updateSpaceLogo.affected !== 1) {
+                    throw new CustomException(
+                        "공간 로고 수정 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+
+                const getPresignedUrl = await this.s3.getPresignedUrl(
+                    user.userId,
+                    spaceId,
+                    spaceLogo,
+                    spaceLogoExtension
+                );
+
+                return getPresignedUrl;
 
             }, {
             param,
-            body
-        })
+            body,
+            user
+        });
 
-    }
+        return getPresignedUrl;
+
+    };
 
     async updateSpaceRole() {
         await this.db.transaction(
