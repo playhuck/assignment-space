@@ -32,6 +32,8 @@ import { SpaceRole } from '@entities/space.role.entity';
 import { SpaceUserRole } from '@entities/space.user.role.entity';
 import { Space } from '@entities/space.entity';
 import { SpaceRoleCode } from '@entities/space.role.code.entity';
+import { PatchSpaceNameDto } from '@dtos/spaces/patch.space.name.dto';
+import { PatchSpaceLogoDto } from '@dtos/spaces/patch.space.logo.dto';
 
 jest.mock('@aws-sdk/s3-request-presigner', () => ({
     getSignedUrl: jest.fn(() => {
@@ -79,9 +81,9 @@ describe('Space Test', () => {
     let targetSpaceId: number;
     let scenarioSpaceId: number;
     let targetOwnerSpaceRoleId: number;
-    let scenarioSpaceRoleId:number;
-    let scenarioJoinerSpaceRoleId:number;
-    let scenarioDeleteSpaceRoldId:number;
+    let scenarioSpaceRoleId: number;
+    let scenarioJoinerSpaceRoleId: number;
+    let scenarioDeleteSpaceRoldId: number;
 
     let currTime: string;
     let accessToken: string;
@@ -168,7 +170,7 @@ describe('Space Test', () => {
 
     });
 
-    it('access token 발급', async() => {
+    it('access token 발급', async () => {
 
         const ownerToken = jwt.signAccessToken({
             userId: targetUserId,
@@ -370,11 +372,11 @@ describe('Space Test', () => {
                     expect(getUserSpaceRelation?.spaceRole.roleLevel).toBe('owner');
 
                     scenarioSpaceId = getSpaceUserRoleByUserId[0].spaceId;
-                    
+
                     const getSpaceRoleList = await spaceRepo.getSpaceRoleListBySpaceId(scenarioSpaceId);
 
                     expect(getSpaceRoleList.length).toBe(6);
-                    
+
                     scenarioSpaceRoleId = getSpaceRoleList[1].spaceRoleId;
                     scenarioJoinerSpaceRoleId = getSpaceRoleList[2].spaceRoleId;
                     scenarioDeleteSpaceRoldId = getSpaceRoleList[3].spaceRoleId;
@@ -387,7 +389,7 @@ describe('Space Test', () => {
 
     describe("공간 참여", () => {
 
-        it('유효하지 않은 코드', async() => {
+        it('유효하지 않은 코드', async () => {
 
             try {
                 await controller.postSpaceJoin(
@@ -410,18 +412,18 @@ describe('Space Test', () => {
 
                 if (e instanceof CustomException) expect(e['errorCode']).toBe(ECustomExceptionCode['SPACE-002']);
                 if (e instanceof CustomException) expect(e['statusCode']).toBe(400);
-                
+
             }
         });
 
         /** 유저의 참여는 위에서 테스트 완료 */
-        it('시나리오 : 공간 참여 Admin', async() => {
+        it('시나리오 : 공간 참여 Admin', async () => {
 
             const spaceRole = await spaceRepo.getSpaceRoleCodeByRoleId(scenarioSpaceRoleId);
 
             expect(spaceRole).toBeTruthy();
 
-            const send : PostSpaceJoinDto = {
+            const send: PostSpaceJoinDto = {
                 joinCode: spaceRole?.code!
             };
 
@@ -429,7 +431,7 @@ describe('Space Test', () => {
                 .post(`/space/${scenarioSpaceId}/join`)
                 .set('Authorization', `Bearer ${secondAccessToken}`)
                 .send(send)
-                .then(async() => {
+                .then(async () => {
 
                     const spaceUserRole = await spaceRepo.getSpaceUserRoleByUserId(
                         targetSecondUserId
@@ -440,13 +442,13 @@ describe('Space Test', () => {
                 });
         });
 
-        it('시나리오 : 공간 참여 Joiner', async() => {
+        it('시나리오 : 공간 참여 Joiner', async () => {
 
             const spaceRole = await spaceRepo.getSpaceRoleCodeByRoleId(scenarioJoinerSpaceRoleId);
 
             expect(spaceRole).toBeTruthy();
 
-            const send : PostSpaceJoinDto = {
+            const send: PostSpaceJoinDto = {
                 joinCode: spaceRole?.code!
             };
 
@@ -454,8 +456,8 @@ describe('Space Test', () => {
                 .post(`/space/${scenarioSpaceId}/join`)
                 .set('Authorization', `Bearer ${joinerAccessToken}`)
                 .send(send)
-                .then(async() => {
-                    
+                .then(async () => {
+
                     const spaceUserRole = await spaceRepo.getSpaceUserRoleByUserId(
                         targetJoinerUserId
                     );
@@ -464,8 +466,60 @@ describe('Space Test', () => {
 
                 });
         })
-        
+
     });
+
+    describe("공간 수정", () => {
+
+        it('시나리오 : 공간이름 수정, PATCH /space/owner/:spaceId/name', async() => {
+
+            const spaceName = 'NAME_UPDATE'; 
+            const send : PatchSpaceNameDto = {
+                spaceName
+            };
+            await req
+                .patch(`/space/owner/${scenarioSpaceId}/name`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send(send)
+                .query(query)
+                .then(async() => {
+
+                    const space = await spaceRepo.getSpaceById(scenarioSpaceId);
+
+                    expect(space?.spaceName).toBe(spaceName);
+                });
+        });
+
+        it('시나리오 : 공간로고 수정, PATCH /space/owner/:spaceId/logo', async () => {
+
+            const spaceLogo = 'LOGO_UPDATE.png';
+            const send: PatchSpaceLogoDto = {
+                spaceLogo,
+                spaceLogoExtension: 'image'
+            };
+
+            await req
+                .patch(`/space/owner/${scenarioSpaceId}/logo`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send(send)
+                .query(query)
+                .then(async (res) => {
+
+                    const { body }: {
+                        body: {
+                            getPresignedUrl: string
+                        }
+                    } = res;
+
+                    expect(body.getPresignedUrl).toBe('hello');
+
+                    const space = await spaceRepo.getSpaceById(scenarioSpaceId);
+
+                    expect(space?.spaceLogo).toBe(spaceLogo);
+                });
+
+        });
+    })
 
     describe("권한", () => {
 
@@ -565,7 +619,7 @@ describe('Space Test', () => {
                     .delete(`/space/admin/${scenarioSpaceId}/${scenarioDeleteSpaceRoldId}`)
                     .set('Authorization', `Bearer ${secondAccessToken}`)
                     .query(query)
-                    .then(async() => {
+                    .then(async () => {
 
                         const getDeletedSpaceRole = await spaceRepo.getSpaceRoleBySpaceRoleId(scenarioDeleteSpaceRoldId);
                         expect(getDeletedSpaceRole).toBeFalsy();
