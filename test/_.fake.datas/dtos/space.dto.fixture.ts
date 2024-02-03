@@ -61,6 +61,10 @@ export class SpaceDtoFixture {
         }
     };
 
+    public async postSpaceJoin(){
+        return faker.datatype.string(8);
+    }
+
     get randomTinyIntValue() {
         return Math.round(Math.random());
     }

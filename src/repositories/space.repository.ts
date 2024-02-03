@@ -11,6 +11,7 @@ import { SpaceUserRole } from "@entities/space.user.role.entity";
 
 import { OWNER, NOT_OWNER_ROLE } from "@common/constants/role.constant";
 import { IUser } from "@models/interfaces/i.user";
+import { SpaceRoleCode } from "@entities/space.role.code.entity";
 
 @Injectable()
 export class SpaceRepository {
@@ -18,7 +19,8 @@ export class SpaceRepository {
     constructor(
         @InjectRepository(Space) private spaceRepo: Repository<Space>,
         @InjectRepository(SpaceRole) private spaceRoleRepo: Repository<SpaceRole>,
-        @InjectRepository(SpaceUserRole) private userRoleRepo: Repository<SpaceUserRole>
+        @InjectRepository(SpaceUserRole) private userRoleRepo: Repository<SpaceUserRole>,
+        @InjectRepository(SpaceRoleCode) private codeRepo: Repository<SpaceRoleCode>
     ) {
     };
 
@@ -97,6 +99,19 @@ export class SpaceRepository {
 
     };
 
+    async getSpaceUserRoleBySpaceRoleId(
+        spaceRoleId: number
+    ){
+
+        const spaceUserRole = await this.userRoleRepo.findOne({
+            where: {
+                spaceRoleId
+            }
+        });
+
+        return spaceUserRole
+    }
+
     async getUserSpaceRelation(
         spaceId: number,
         userId: number
@@ -130,6 +145,32 @@ export class SpaceRepository {
         });
 
         return spaceRoleList;
+    };
+
+    async getSpaceRoleCodeByCode(
+        code: string
+    ) {
+
+        const codeEntity = await this.codeRepo.findOne({
+            where: {
+                code
+            }
+        });
+
+        return codeEntity
+    };
+
+    async getSpaceRoleCodeByRoleId(
+        spaceRoleId: number
+    ) {
+
+        const codeEntity = await this.codeRepo.findOne({
+            where: {
+                spaceRoleId
+            }
+        });
+
+        return codeEntity
     }
 
     async insertSpace(
@@ -139,18 +180,14 @@ export class SpaceRepository {
             spaceName
         }: Pick<PostSpaceDto, 'spaceLogo' | 'spaceName'>,
         createdAt: string,
-        userId: number,
-        adminCode: string,
-        joinerCode: string
+        userId: number
     ){
 
         const insert = await entityManager.insert(Space, {
             spaceLogo,
             spaceName,
             createdAt,
-            userId,
-            adminCode,
-            joinerCode
+            userId
         });
 
         return insert
@@ -213,5 +250,31 @@ export class SpaceRepository {
 
         return insert
     };
+
+    async insertSpaceRoleCode(
+        entityManager: EntityManager,
+        spaceRoleId: number,
+        code: string
+    ){
+
+        const insert = await entityManager.insert(SpaceRoleCode, {
+            spaceRoleId,
+            code
+        });
+
+        return insert;
+    };
+
+    async deleteSpaceRole(
+        entityManager: EntityManager,
+        spaceRoleId: number
+    ){
+
+        const deleteSpaceRole = await entityManager.softDelete(SpaceRole, {
+            spaceRoleId
+        });
+
+        return deleteSpaceRole;
+    }
 
 }

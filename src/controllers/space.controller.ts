@@ -4,6 +4,7 @@ import { SpaceRoleGuard } from '@common/guards/space.role.guard';
 import { PostSpaceDto } from '@dtos/spaces/post.space.dto';
 import { PostSpaceJoinDto } from '@dtos/spaces/post.space.join.dto';
 import { SpaceParamDto } from '@dtos/spaces/space.param.dto';
+import { SpaceRoleParamDto } from '@dtos/spaces/space.role.param.dto';
 import { IUser } from '@models/interfaces/i.user';
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { SpaceService } from '@services/space.service';
@@ -36,6 +37,11 @@ export class SpaceController {
         @Body() body: PostSpaceJoinDto
     ){
 
+        void await this.service.postSpaceJoin(
+            user,
+            param,
+            body
+        )
     }
 
     /** 공간 수정 */
@@ -53,13 +59,22 @@ export class SpaceController {
     @Delete('/owner/:spaceId')
     async deleteSpace() { };
 
+    /** 공간 역할 삭제 */
+    @UseGuards(SpaceRoleGuard)
+    @Delete('/admin/:spaceId/:spaceRoleId')
+    async deleteSpaceRole(
+        @Param() param: SpaceRoleParamDto
+    ) {
+
+        void await this.service.deleteSpaceRole(
+            param
+        )
+    };
+
     @Get('/:spaceId')
     async getSpace() { };
 
     @Get('/:userId/list')
     async getMySpaceList() { };
-
-    @Post('/join')
-    async postJoinSpace() { };
 
 }

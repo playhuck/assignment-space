@@ -1,4 +1,5 @@
 import { Space } from '@entities/space.entity';
+import { SpaceRoleCode } from '@entities/space.role.code.entity';
 import { SpaceRole } from '@entities/space.role.entity';
 import { SpaceUserRole } from '@entities/space.user.role.entity';
 import { User } from '@entities/user.entity';
@@ -21,7 +22,8 @@ import { LoggerUtil } from '@utils/logger.util';
             User,
             Space,
             SpaceRole,
-            SpaceUserRole
+            SpaceUserRole,
+            SpaceRoleCode
         ])
     ],
     providers: [

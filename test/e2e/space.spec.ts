@@ -24,6 +24,10 @@ import { SpaceDtoFixture } from '../_.fake.datas/dtos/space.dto.fixture';
 import { User } from '@entities/user.entity';
 import { PostSpaceDto } from '@dtos/spaces/post.space.dto';
 import { ADMIN } from '@common/constants/role.constant';
+import { CustomException } from '@common/exception/custom.exception';
+import { ECustomExceptionCode } from '@models/enums/e.exception.code';
+import { PostSpaceJoinDto } from '@dtos/spaces/post.space.join.dto';
+import { SpaceRoleCode } from '@entities/space.role.code.entity';
 
 jest.mock('@aws-sdk/s3-request-presigner', () => ({
     getSignedUrl: jest.fn(() => {
@@ -67,13 +71,16 @@ describe('Space Test', () => {
 
     const targetUserId = 1;
     const targetSecondUserId = 2;
+    const targetNoJoinerUserId = 3;
     let targetSpaceId: number;
     let scenarioSpaceId: number;
     let targetOwnerSpaceRoleId: number;
+    let scenarioSpaceRoleId:number;
 
     let currTime: string;
     let accessToken: string;
     let secondAccessToken: string;
+    let noJoinerAccessToken: string;
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -133,6 +140,14 @@ describe('Space Test', () => {
 
         expect(secondOwner.generatedMaps.length).toBe(1);
 
+
+        const noJoin = await entityManager.insert(User, {
+            userId: targetNoJoinerUserId,
+            ...userDto.signUp()
+        });
+
+        expect(noJoin.generatedMaps.length).toBe(1);
+
     });
 
     it('SpaceService Property Should Be Define', async () => {
@@ -161,47 +176,56 @@ describe('Space Test', () => {
             type: 'AccessToken'
         });
 
+        expect(secondOwnerToken).toBeTruthy();
+
+        const noJoinerToken = jwt.signAccessToken({
+            userId: targetNoJoinerUserId,
+            type: 'AccessToken'
+        });
+
+        expect(noJoinerToken).toBeTruthy();
+
         accessToken = ownerToken;
         secondAccessToken = secondOwnerToken;
+        noJoinerAccessToken = noJoinerToken;
 
     });
 
     describe("공간 생성, POST /space", () => {
-        
 
-        it('영문 + 숫자의 조합 8자리', async() => {
-        
+        it('영문 + 숫자의 조합 8자리', async () => {
+
             const randomValue = await random.generateRandomString(8);
             const regex = new RegExp(/^[a-zA-Z0-9]{8}$/).test(randomValue);
-    
+
             expect(regex).toBeTruthy();
-           
+
         });
 
-        it('역할 권한 확인 CASE 1: admin', async() => {
+        it('역할 권한 확인 CASE 1: admin', async () => {
 
             const type = service.getRoleType('admin');
 
             Object.keys(type).map((key, i) => {
 
                 expect(type[key]).toBe(1);
-                
+
             })
         });
 
-        it('역할 권한 확인 CASE 2: joiner', async() => {
+        it('역할 권한 확인 CASE 2: joiner', async () => {
 
             const type = service.getRoleType('joiner');
 
             Object.keys(type).map((key, i) => {
 
                 expect(type[key]).toBe(0);
-                
+
             });
 
         });
 
-        it('역할 권한 확인 CASE 3: custom', async() => {
+        it('역할 권한 확인 CASE 3: custom', async () => {
 
             const type = service.getRoleType('custom', {
                 spaceChatAdminDelete: 1,
@@ -218,26 +242,21 @@ describe('Space Test', () => {
                 expect(type['spacePostAdminDelete']).toBe(0);
                 expect(type['spacePostNotice']).toBe(1);
                 expect(type['spaceRoleDelete']).toBe(0);
-                
+
             });
 
         });
 
-        it('공간 생성', async() => {
+        it('공간 생성', async () => {
 
-            const adminCode = await random.generateRandomString(8);
-            const joinerCode = await random.generateRandomString(8);
-
-            const insert : InsertResult = await spaceRepo.insertSpace(
+            const insert: InsertResult = await spaceRepo.insertSpace(
                 entityManager,
                 {
                     spaceLogo: 'image',
                     spaceName: 'hello'
                 },
                 currTime,
-                targetUserId,
-                adminCode,
-                joinerCode
+                targetUserId
             );
 
             expect(insert.generatedMaps.length).toBe(1);
@@ -247,7 +266,7 @@ describe('Space Test', () => {
 
         });
 
-        it('소유자 역할 생성', async() => {
+        it('소유자 역할 생성', async () => {
 
             const insert = await spaceRepo.insertOwnerSpaceRole(
                 entityManager,
@@ -269,7 +288,7 @@ describe('Space Test', () => {
             expect(getOwnerSpaceRole?.spaceOwnerAssign).toBe(1);
         });
 
-        it('소유자의 유저 역할 생성', async() => {
+        it('소유자의 유저 역할 생성', async () => {
 
             const insert = await spaceRepo.insertSpaceUserRole(
                 entityManager,
@@ -292,7 +311,7 @@ describe('Space Test', () => {
 
         });
 
-        it('그 외 역할 생성', async() => {
+        it('그 외 역할 생성', async () => {
 
             const insert = await spaceRepo.insertSpaceRole(
                 entityManager,
@@ -315,28 +334,22 @@ describe('Space Test', () => {
 
         });
 
-        it('시나리오 : 공간 생성', async() => {
-            
-            const adminCode = await random.generateRandomString(8);
-            const joinerCode = await random.generateRandomString(8);
-            const send : PostSpaceDto = await spaceDto.postSpace('TEST_SPACE');
-            const adminCodeSpyOn = jest.spyOn(RandomProvider.prototype, 'generateRandomString').mockResolvedValue(adminCode);
-            adminCodeSpyOn.mockRestore();
+        it('시나리오 : 공간 생성', async () => {
 
-            jest.spyOn(RandomProvider.prototype, 'generateRandomString').mockResolvedValue(joinerCode);
+            const send: PostSpaceDto = await spaceDto.postSpace('TEST_SPACE');
 
             await req
                 .post('/space')
                 .set('Authorization', `Bearer ${accessToken}`)
                 .send(send)
-                .then(async(res) => {
+                .then(async (res) => {
 
-                    const { body } : {
-                        body : {
+                    const { body }: {
+                        body: {
                             getPresignedUrl: string
                         }
-                    }= res;
-                    
+                    } = res;
+
                     expect(body.getPresignedUrl).toBe('hello');
 
                     const getSpaceUserRoleByUserId = await spaceRepo.getSpaceUserRoleByUserId(targetUserId);
@@ -351,6 +364,12 @@ describe('Space Test', () => {
                     expect(getUserSpaceRelation?.spaceRole.roleLevel).toBe('owner');
 
                     scenarioSpaceId = getSpaceUserRoleByUserId[0].spaceId;
+                    
+                    const getSpaceRoleList = await spaceRepo.getSpaceRoleListBySpaceId(scenarioSpaceId);
+
+                    expect(getSpaceRoleList.length).toBe(6);
+                    
+                    scenarioSpaceRoleId = getSpaceRoleList[1].spaceRoleId;
 
                 })
 
@@ -358,20 +377,87 @@ describe('Space Test', () => {
 
     });
 
+    describe("공간 참여", () => {
+
+        it('유효하지 않은 코드', async() => {
+
+            try {
+                await controller.postSpaceJoin(
+                    {
+                        userId: targetUserId,
+                        email: ' ',
+                        createdAt: ' ',
+                        firstName: ' ',
+                        lastName: ' ',
+                        profileImage: ' '
+                    },
+                    {
+                        spaceId: scenarioSpaceId
+                    },
+                    {
+                        joinCode: '00'
+                    }
+                );
+            } catch (e) {
+
+                if (e instanceof CustomException) expect(e['errorCode']).toBe(ECustomExceptionCode['SPACE-002']);
+                if (e instanceof CustomException) expect(e['statusCode']).toBe(400);
+                
+            }
+        });
+
+        /** 유저의 참여는 위에서 테스트 완료 */
+        it('시나리오 : 공간 참여', async() => {
+
+            const spaceRole = await spaceRepo.getSpaceRoleCodeByRoleId(scenarioSpaceRoleId);
+
+            const spaceCodeList = await entityManager.find(SpaceRoleCode);
+
+            console.log('1:', spaceCodeList);
+            
+            expect(spaceRole).toBeTruthy();
+
+            const send : PostSpaceJoinDto = {
+                joinCode: spaceRole?.code!
+            };
+
+            await req
+                .post(`/space/${scenarioSpaceId}/join`)
+                .set('Authorization', `Bearer ${secondAccessToken}`)
+                .send(send)
+                .then(async() => {
+                    console.log(2, scenarioSpaceId,
+                        targetSecondUserId,
+                        scenarioSpaceRoleId);
+                    
+                    const spaceUserRole = await spaceRepo.getSpaceUserRoleByUserId(
+                        targetSecondUserId
+                    );
+
+                    console.log(3, spaceUserRole[0].spaceId, spaceUserRole[0].spaceRoleId, spaceRole?.spaceRoleId);
+                    
+
+                    expect(spaceUserRole).toBeTruthy();
+
+                });
+        })
+        
+    });
+
     describe("권한", () => {
 
-        it('공간 수정은 OWNER만 가능', async () => {
+        it('공간에 참여 필요', async () => {
 
             await req
                 .patch(`/space/owner/${scenarioSpaceId}`)
-                .set('Authorization', `Bearer ${secondAccessToken}`)
+                .set('Authorization', `Bearer ${noJoinerAccessToken}`)
                 .query(query)
                 .then((res) => {
 
                     const { body } = res;
 
-                    expect(body['message']).toBe('소유자만 이용할 수 있습니다.');
-                    expect(body['statusCode']).toBe(401)
+                    expect(body['message']).toBe('잘못된 요청(공간 참여자가 아님)');
+                    expect(body['statusCode']).toBe(403)
 
                 })
 

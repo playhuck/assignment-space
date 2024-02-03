@@ -33,10 +33,7 @@ export class DbUtil {
                 return result;
 
             } catch (e) {
-
-                // console.log("SERVER ERROR:", e);
-
-
+                
                 await queryRunner.rollbackTransaction();
                 await queryRunner.release();
 

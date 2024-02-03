@@ -36,18 +36,18 @@ export class SpaceRoleGuard implements CanActivate {
 
         if (!isSpaceUser) {
             throw new CustomException(
-                "잘못된 요청입니다.",
+                "잘못된 요청(공간 참여자가 아님)",
                 ECustomExceptionCode["INTERVAL-SERVER-ERROR"],
-                500
+                403
             )
         };
 
         const getUserSpaceRelation = await this.spaceRepo.getUserSpaceRelation(spaceId, res?.user.userId);
         if (!getUserSpaceRelation) {
             throw new CustomException(
-                "잘못된 요청입니다.",
+                "잘못된 요청(공간 참여자가 아님)2",
                 ECustomExceptionCode["INTERVAL-SERVER-ERROR"],
-                500
+                403
             )
         };
 
@@ -71,6 +71,17 @@ export class SpaceRoleGuard implements CanActivate {
             };
 
         };
+
+        if (rolePath === 'admin') {
+
+            if (getUserSpaceRelation.spaceRole.roleLevel === 'joiner') {
+                throw new CustomException(
+                    "일반 참여자는 사용할 수 없습니다.",
+                    ECustomExceptionCode["ROLE-003"],
+                    401
+                );
+            };
+        }
 
         return true
     };

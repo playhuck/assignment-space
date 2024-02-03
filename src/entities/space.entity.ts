@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMan
 import { User } from './user.entity';
 import { CustomBaseEntity } from './base.entity';
 import { SpaceRole } from './space.role.entity';
+import { SpaceRoleCode } from './space.role.code.entity';
 
 @Entity('space')
 export class Space extends CustomBaseEntity {
@@ -33,26 +34,11 @@ export class Space extends CustomBaseEntity {
     })
     spaceLogo!: string;
 
-    @Column({
-        name: 'space_admin_code',
-        type: 'varchar',
-        length: 30,
-        nullable: false
-    })
-    adminCode!: string;
-
-    @Column({
-        name: 'space_joiner_code',
-        type: 'varchar',
-        length: 30,
-        nullable: false
-    })
-    joinerCode!: string;
-
     @ManyToOne(() => User, user => user.spaces, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user!: User;
 
     @OneToMany(() => SpaceRole, role => role.space)
     spaceRoles!: SpaceRole[];
+
 }

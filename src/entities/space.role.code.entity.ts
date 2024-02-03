@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 import { Space } from './space.entity';
 import { SpaceRole } from './space.role.entity';
 import { CustomBaseEntity } from './base.entity';
@@ -12,22 +12,24 @@ export class SpaceRoleCode extends CustomBaseEntity {
     spaceRoleCodeId!: number;
 
     @Column({
-        name: 'space_id',
-        type: 'int'
-    })
-    spaceId!: number;
-
-    @Column({
         name: 'space_role_id',
-        type: 'int'
+        type: 'int',
+        nullable: false
     })
     spaceRoleId!: number;
 
-    @ManyToOne(() => Space, space => space.spaceId, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'space_id' })
-    space!: Space;
+    @Column({
+        name: 'space_role_code',
+        type: 'varchar',
+        length: 20,
+        nullable: false
+    })
+    code!: string;
 
-    @ManyToOne(() => SpaceRole, role => role.spaceRoleId, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'space_role_id' })
+    @OneToOne(()=> SpaceRole, (role) => role.spaceCodes ,{ onDelete: 'CASCADE' })
+    @JoinColumn({ 
+        name: 'space_role_id',
+        referencedColumnName: 'spaceRoleId' 
+    })
     spaceRole!: SpaceRole;
 }

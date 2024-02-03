@@ -27,6 +27,7 @@ export class JwtRefreshGuard implements CanActivate {
         const response: Response = await context.switchToHttp().getResponse();
         
         const refreshToken = request?.headers?.cookie?.split('=')[1];
+        
         if (!refreshToken) {
             throw new CustomException(
                 'JWT 토큰이 누락되었습니다.',

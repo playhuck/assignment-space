@@ -343,7 +343,7 @@ describe('User Authentication Test', () => {
 
             await req
                 .post('/auth/access-token')
-                .set('Cookie', [refreshToken])
+                .set('Cookie', [`refreshToken=${refreshToken}`])
                 .then((res) => {
 
                     const { body } = res;
@@ -366,7 +366,7 @@ describe('User Authentication Test', () => {
 
             await req
                 .post('/auth/access-token')
-                .set('Cookie', [refreshToken])
+                .set('Cookie', [`refreshToken=${refreshToken}`])
                 .then((res) => {
 
                     const { body } = res;
@@ -388,7 +388,7 @@ describe('User Authentication Test', () => {
 
             await req
                 .post('/auth/access-token')
-                .set('Cookie', [expiredToken])
+                .set('Cookie', [`refreshToken=${expiredToken}`])
                 .then((res) => {
 
                     const { body } = res;
@@ -409,7 +409,7 @@ describe('User Authentication Test', () => {
 
             await req
                 .post('/auth/access-token')
-                .set('Cookie', [refreshToken])
+                .set('Cookie', [`refreshToken=${refreshToken}`])
                 .then((res) => {
 
                     const { body }: {
@@ -430,7 +430,7 @@ describe('User Authentication Test', () => {
 
             await req
                 .patch('/auth/sign-out')
-                .set('Cookie', [refreshToken])
+                .set('Cookie', [`refreshToken=${refreshToken}`])
                 .then(async (res) => {
 
                     const user = await entityManager.findOne(User,

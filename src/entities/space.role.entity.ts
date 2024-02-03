@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { Space } from './space.entity';
 import { SpaceUserRole } from './space.user.role.entity';
 import { CustomBaseEntity } from './base.entity';
 import { TRoleLevel } from '@models/types/t.role';
+import { SpaceRoleCode } from './space.role.code.entity';
 
 @Entity('space_role')
 export class SpaceRole extends CustomBaseEntity {
@@ -103,4 +104,7 @@ export class SpaceRole extends CustomBaseEntity {
 
     @OneToMany(() => SpaceUserRole, (userRole) => userRole.spaceRole, { onDelete: 'CASCADE' })
     spaceUserRoles!: SpaceUserRole[];
+
+    @OneToOne(() => SpaceRoleCode, { onDelete: 'CASCADE' })
+    spaceCodes!: SpaceRoleCode;
 }

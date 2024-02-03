@@ -21,6 +21,7 @@ import { TAdminRole, TDefaultRole, TRole } from '@models/types/t.role';
 import { OWNER, ADMIN_ROLE, NOT_ADMIN_ROLE } from '@common/constants/role.constant';
 import { SpaceParamDto } from '@dtos/spaces/space.param.dto';
 import { PostSpaceJoinDto } from '@dtos/spaces/post.space.join.dto';
+import { SpaceRoleParamDto } from '@dtos/spaces/space.role.param.dto';
 
 @Injectable()
 export class SpaceService {
@@ -49,16 +50,12 @@ export class SpaceService {
                 const { roleList, spaceOwnerRoleName } = body;
 
                 const createdAt = this.dayjs.getDatetimeByOptions('YYYY-MM-DD HH:mm:ss');
-                const adminCode = await this.random.generateRandomString(8);
-                const joinerCode = await this.random.generateRandomString(8);
 
                 const insertSpace = await this.spaceRepo.insertSpace(
                     entityManager,
                     args.body,
                     createdAt,
-                    user.userId,
-                    adminCode,
-                    joinerCode
+                    user.userId
                 );
                 if (insertSpace.generatedMaps.length !== 1) {
                     throw new CustomException(
@@ -103,9 +100,24 @@ export class SpaceService {
                     )
                 };
 
+                const insertOwnerSpaceRoleCode = await this.spaceRepo.insertSpaceRoleCode(
+                    entityManager,
+                    insertOwnerSpaceRole?.raw.insertId,
+                    await this.random.generateRandomString(8)
+                );
+
+                if (insertOwnerSpaceRoleCode.generatedMaps.length !== 1) {
+                    throw new CustomException(
+                        "공간 역할 코드 생성에 실패 했습니다.",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+
                 await Promise.all(roleList.map(async (roleList, i) => {
 
                     const { roleName, roleLevel, defaultRole, roles } = roleList;
+                    const code = await this.random.generateRandomString(8);
 
                     const roleType = this.getRoleType(defaultRole, roles);
 
@@ -121,6 +133,20 @@ export class SpaceService {
                     if (insertSpaceRole.generatedMaps.length !== 1) {
                         throw new CustomException(
                             "공간 역할 생성에 실패 했습니다.",
+                            ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                            500
+                        )
+                    };
+
+                    const insertSpaceRoleCode = await this.spaceRepo.insertSpaceRoleCode(
+                        entityManager,
+                        insertSpaceRole?.raw.insertId,
+                        code
+                    );
+
+                    if (insertSpaceRoleCode.generatedMaps.length !== 1) {
+                        throw new CustomException(
+                            "공간 역할 코드 생성에 실패 했습니다.",
                             ECustomExceptionCode["AWS-RDS-EXCEPTION"],
                             500
                         )
@@ -160,29 +186,37 @@ export class SpaceService {
                 const { userId } = user;
                 const { spaceId } = param;
                 const { joinCode } = body;
+                const createdAt = this.dayjs.getDatetimeByOptions('YYYY-MM-DD HH:mm:ss');
 
-                const space = await this.spaceRepo.getSpaceById(spaceId);
-                if(!space){
+                const code = await this.spaceRepo.getSpaceRoleCodeByCode(joinCode);
+                if(!code){
                     throw new CustomException(
-                        "공간을 찾을 수 없습니다.",
-                        ECustomExceptionCode["SPACE-001"],
-                        403
+                        "유효하지 않은 코드",
+                        ECustomExceptionCode["SPACE-002"],
+                        400
                     )
                 };
-                const { adminCode, joinerCode } = space;
-                const roleType = joinCode === adminCode ? 'admin' : 'joiner';
 
-                const codeActions = {
-                    admin: async() => {
-                        
-                        const insertSpaceUserRole = await this.spaceRepo
-                    },
-                    joiner: async() => {
-                      // adminCode에 대한 동작
-                      console.log('Admin code executed');
-                    },
-                };
+                console.log("CODE:", code);
                 
+                const { spaceRoleId } = code;
+                
+                const insertSpaceUserRole = await this.spaceRepo.insertSpaceUserRole(
+                    entityManager,
+                    spaceId,
+                    userId,
+                    spaceRoleId,
+                    createdAt
+                );
+                console.log("INSERT USER ROLE:",insertSpaceUserRole);
+                
+                if(insertSpaceUserRole.generatedMaps.length !== 1){
+                    throw new CustomException(
+                        "공간 참여 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
 
             }, {
             user,
@@ -201,15 +235,67 @@ export class SpaceService {
             }, { spaceId })
     };
 
-    async updateSpaceRole() { }
+    async updateSpaceRole() {
+        await this.db.transaction(
+            async(entityManager: EntityManager, args) => {
 
-    async deleteSpace() { };
+                const { } = args; 
+            }, {
+            }
+        );
+    }
+
+    async deleteSpace() {
+
+        await this.db.transaction(
+            async(entityManager: EntityManager, args) => {
+
+                const { } = args; 
+            }, {
+            }
+        );
+    };
+
+    async deleteSpaceRole(
+        param: SpaceRoleParamDto
+    ) {
+
+        void await this.db.transaction(
+            async(entityManager: EntityManager, args) => {
+
+                const { param } = args;
+                const { spaceRoleId } = param;
+                
+                const isUsedSpaceRole = await this.spaceRepo.getSpaceUserRoleBySpaceRoleId(spaceRoleId);
+                if(isUsedSpaceRole){
+                    throw new CustomException(
+                        "누군가 사용중인 역할",
+                        ECustomExceptionCode["ROLE-002"],
+                        400
+                    )
+                };
+
+                const deleteSpaceRole = await this.spaceRepo.deleteSpaceRole(
+                    entityManager,
+                    spaceRoleId
+                );
+                if(deleteSpaceRole.affected !== 1){
+                    throw new CustomException(
+                        "역할 삭제중 문제가 발생",
+                        ECustomExceptionCode['AWS-RDS-EXCEPTION'],
+                        500
+                    )
+                };
+                
+            }, {
+                param
+            }
+        )
+    };
 
     async getSpace() { };
 
     async getMySpaceList() { };
-
-    async postJoinSpace() { };
 
     public getRoleType(defaultRole: TRole, roles?: TAdminRole | undefined) {
         const roleType =
