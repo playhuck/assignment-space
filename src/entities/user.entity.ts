@@ -65,9 +65,15 @@ export class User extends CustomBaseEntity {
     })
     refreshToken?: string | null;
 
-    @OneToMany(() => Space, (space) => space.user)
+    @OneToMany(() => Space, (space) => space.user, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
     spaces!: Space[];
 
-    @OneToMany(() => SpaceUserRole, (spaceUserRole) => spaceUserRole.user)
+    @OneToMany(() => SpaceUserRole, (spaceUserRole) => spaceUserRole.user, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
     spaceUserRoles!: SpaceUserRole[];
 }

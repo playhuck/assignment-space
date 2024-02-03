@@ -103,6 +103,7 @@ export class SpaceService {
                 const insertOwnerSpaceRoleCode = await this.spaceRepo.insertSpaceRoleCode(
                     entityManager,
                     insertOwnerSpaceRole?.raw.insertId,
+                    spaceId,
                     await this.random.generateRandomString(8)
                 );
 
@@ -141,6 +142,7 @@ export class SpaceService {
                     const insertSpaceRoleCode = await this.spaceRepo.insertSpaceRoleCode(
                         entityManager,
                         insertSpaceRole?.raw.insertId,
+                        spaceId,
                         code
                     );
 
@@ -197,8 +199,6 @@ export class SpaceService {
                     )
                 };
 
-                console.log("CODE:", code);
-                
                 const { spaceRoleId } = code;
                 
                 const insertSpaceUserRole = await this.spaceRepo.insertSpaceUserRole(
@@ -208,8 +208,7 @@ export class SpaceService {
                     spaceRoleId,
                     createdAt
                 );
-                console.log("INSERT USER ROLE:",insertSpaceUserRole);
-                
+
                 if(insertSpaceUserRole.generatedMaps.length !== 1){
                     throw new CustomException(
                         "공간 참여 실패",
@@ -245,14 +244,48 @@ export class SpaceService {
         );
     }
 
-    async deleteSpace() {
+    async deleteSpace(
+        user: IUser,
+        param: SpaceParamDto
+    ) {
 
         await this.db.transaction(
-            async(entityManager: EntityManager, args) => {
+            async (entityManager: EntityManager, args) => {
 
-                const { } = args; 
+                const { user, param } = args;
+                const { spaceId } = param;
+                const { userId } = user;
+                
+                /** 삭제의 경우 같은 검증 다시 한 번 */
+                const userRelation = await this.spaceRepo.getUserSpaceRelation(
+                    spaceId,
+                    userId
+                );
+                if (userRelation?.spaceRole.roleLevel !== 'owner') {
+                    throw new CustomException(
+                        "소유자만 이용할 수 있습니다.",
+                        ECustomExceptionCode["ROLE-001"],
+                        401
+                    )
+                };
+
+                const deleteSpace = await this.spaceRepo.deleteSpace(
+                    entityManager,
+                    spaceId
+                );
+                
+                if (!deleteSpace?.deletedAt) {
+                    throw new CustomException(
+                        "공간 삭제에 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    );
+                };
+
             }, {
-            }
+            user,
+            param
+        }
         );
     };
 

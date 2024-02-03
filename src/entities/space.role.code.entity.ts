@@ -19,6 +19,13 @@ export class SpaceRoleCode extends CustomBaseEntity {
     spaceRoleId!: number;
 
     @Column({
+        name: 'space_id',
+        type: 'int',
+        nullable: false
+    })
+    spaceId!: number;
+
+    @Column({
         name: 'space_role_code',
         type: 'varchar',
         length: 20,
@@ -26,10 +33,17 @@ export class SpaceRoleCode extends CustomBaseEntity {
     })
     code!: string;
 
-    @OneToOne(()=> SpaceRole, (role) => role.spaceCodes ,{ onDelete: 'CASCADE' })
+    @OneToOne(()=> SpaceRole, (role) => role.spaceCodes)
     @JoinColumn({ 
         name: 'space_role_id',
         referencedColumnName: 'spaceRoleId' 
     })
     spaceRole!: SpaceRole;
+
+    @ManyToOne(()=> Space, (space) => space.spaceId)
+    @JoinColumn({ 
+        name: 'space_id',
+        referencedColumnName: 'spaceId' 
+    })
+    space!: Space;
 }

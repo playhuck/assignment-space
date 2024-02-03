@@ -28,12 +28,12 @@ export class SpaceRoleGuard implements CanActivate {
         const spaceId: number = query?.isTest ?
             +req.path.split('/')[3] :
             +req.path.split('/')[4];
-
+            
         const isSpaceUser = await this.spaceRepo.getSpaceUserRoleForGuard(
             spaceId,
             res.user.userId
         );
-
+            
         if (!isSpaceUser) {
             throw new CustomException(
                 "잘못된 요청(공간 참여자가 아님)",
@@ -71,7 +71,7 @@ export class SpaceRoleGuard implements CanActivate {
             };
 
         };
-
+        
         if (rolePath === 'admin') {
 
             if (getUserSpaceRelation.spaceRole.roleLevel === 'joiner') {

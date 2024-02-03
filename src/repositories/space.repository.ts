@@ -37,6 +37,8 @@ export class SpaceRepository {
         return space;
     };
 
+    /** Space Role */
+
     async getSpaceRoleBySpaceRoleId(
         spaceRoleId: number
     ) {
@@ -49,6 +51,25 @@ export class SpaceRepository {
 
         return spaceRole;
     };
+
+    async getSpaceRoleListBySpaceId(
+        spaceId: number
+    ){
+
+        const spaceRoleList = await this.spaceRoleRepo.find({
+            where: {
+                spaceId
+            },
+            order: {
+                spaceRoleId: 'ASC'
+            }
+        });
+
+        return spaceRoleList;
+    };
+
+
+    /** Space User Role */
 
     async getSpaceUserRoleByUserId(
         userId: number
@@ -110,6 +131,19 @@ export class SpaceRepository {
         });
 
         return spaceUserRole
+    };
+
+    async getSpaceUserRoleListBySpaceId(
+        spaceId: number
+    ) {
+        
+        const spaceUserRoleList = await this.userRoleRepo.find({
+            where: {
+                spaceId
+            }
+        });
+
+        return spaceUserRoleList;
     }
 
     async getUserSpaceRelation(
@@ -129,22 +163,6 @@ export class SpaceRepository {
 
         return userSpaceRelaiton
         
-    };
-
-    async getSpaceRoleListBySpaceId(
-        spaceId: number
-    ){
-
-        const spaceRoleList = await this.spaceRoleRepo.find({
-            where: {
-                spaceId
-            },
-            order: {
-                spaceRoleId: 'ASC'
-            }
-        });
-
-        return spaceRoleList;
     };
 
     async getSpaceRoleCodeByCode(
@@ -254,11 +272,13 @@ export class SpaceRepository {
     async insertSpaceRoleCode(
         entityManager: EntityManager,
         spaceRoleId: number,
+        spaceId: number,
         code: string
     ){
 
         const insert = await entityManager.insert(SpaceRoleCode, {
             spaceRoleId,
+            spaceId,
             code
         });
 
@@ -275,6 +295,27 @@ export class SpaceRepository {
         });
 
         return deleteSpaceRole;
+    };
+
+    async deleteSpace(
+        entityManager: EntityManager,
+        spaceId: number
+    ) {
+
+        const spaceRelation = await entityManager.findOne(Space, {
+            where: {
+                spaceId
+            },
+            relations: [
+                'spaceRoles',
+                'spaceUserRoles',
+                'spaceRoleCodes'
+            ]
+        });
+
+        const deleteSpace = await entityManager.softRemove(Space, spaceRelation!);
+        
+        return deleteSpace;
     }
 
 }

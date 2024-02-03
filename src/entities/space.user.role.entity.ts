@@ -30,15 +30,15 @@ export class SpaceUserRole extends CustomBaseEntity {
     })
     spaceRoleId!: number;
 
-    @ManyToOne(() => Space, space => space.spaceId, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Space, space => space.spaceId)
     @JoinColumn({ name: 'space_id' })
     space!: Space;
 
-    @ManyToOne(() => SpaceRole, role => role.spaceRoleId, { onDelete: 'CASCADE' })
+    @ManyToOne(() => SpaceRole, role => role.spaceRoleId)
     @JoinColumn({ name: 'space_role_id' })
     spaceRole!: SpaceRole;
 
-    @ManyToOne(() => User, (user) => user.spaceUserRoles, { onDelete: 'CASCADE' })
+    @ManyToOne(() => User, (user) => user.spaceUserRoles)
     @JoinColumn({ name: 'user_id' })
     user!: User;
 }

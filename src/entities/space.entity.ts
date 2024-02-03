@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMan
 import { User } from './user.entity';
 import { CustomBaseEntity } from './base.entity';
 import { SpaceRole } from './space.role.entity';
+import { SpaceUserRole } from './space.user.role.entity';
 import { SpaceRoleCode } from './space.role.code.entity';
 
 @Entity('space')
@@ -34,11 +35,26 @@ export class Space extends CustomBaseEntity {
     })
     spaceLogo!: string;
 
-    @ManyToOne(() => User, user => user.spaces, { onDelete: 'CASCADE' })
+    @ManyToOne(() => User, user => user.spaces)
     @JoinColumn({ name: 'user_id' })
     user!: User;
 
-    @OneToMany(() => SpaceRole, role => role.space)
+    @OneToMany(() => SpaceRole, role => role.space, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
     spaceRoles!: SpaceRole[];
+
+    @OneToMany(() => SpaceUserRole, userRole => userRole.space, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    spaceUserRoles!: SpaceUserRole[];
+
+    @OneToMany(() => SpaceRoleCode, roleCode => roleCode.space, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    spaceRoleCodes!: SpaceRoleCode[];
 
 }

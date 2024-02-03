@@ -57,7 +57,13 @@ export class SpaceController {
     /** 공간 삭제 */
     @UseGuards(SpaceRoleGuard)
     @Delete('/owner/:spaceId')
-    async deleteSpace() { };
+    async deleteSpace(
+        @User() user: IUser,
+        @Param() param: SpaceParamDto
+    ) {
+
+        void await this.service.deleteSpace(user, param);
+    };
 
     /** 공간 역할 삭제 */
     @UseGuards(SpaceRoleGuard)

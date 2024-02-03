@@ -98,13 +98,19 @@ export class SpaceRole extends CustomBaseEntity {
     })
     spaceChatAdminDelete!: number;
 
-    @ManyToOne(() => Space, (space) => space.spaceId, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Space, (space) => space.spaceId)
     @JoinColumn({ name: 'space_id'})
     space!: Space;
 
-    @OneToMany(() => SpaceUserRole, (userRole) => userRole.spaceRole, { onDelete: 'CASCADE' })
+    @OneToMany(() => SpaceUserRole, (userRole) => userRole.spaceRole, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
     spaceUserRoles!: SpaceUserRole[];
 
-    @OneToOne(() => SpaceRoleCode, { onDelete: 'CASCADE' })
+    @OneToOne(() => SpaceRoleCode, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
     spaceCodes!: SpaceRoleCode;
 }

@@ -27,6 +27,10 @@ import { ADMIN } from '@common/constants/role.constant';
 import { CustomException } from '@common/exception/custom.exception';
 import { ECustomExceptionCode } from '@models/enums/e.exception.code';
 import { PostSpaceJoinDto } from '@dtos/spaces/post.space.join.dto';
+import { UserRepository } from '@repositories/user.repository';
+import { SpaceRole } from '@entities/space.role.entity';
+import { SpaceUserRole } from '@entities/space.user.role.entity';
+import { Space } from '@entities/space.entity';
 import { SpaceRoleCode } from '@entities/space.role.code.entity';
 
 jest.mock('@aws-sdk/s3-request-presigner', () => ({
@@ -71,16 +75,18 @@ describe('Space Test', () => {
 
     const targetUserId = 1;
     const targetSecondUserId = 2;
-    const targetNoJoinerUserId = 3;
+    const targetJoinerUserId = 3;
     let targetSpaceId: number;
     let scenarioSpaceId: number;
     let targetOwnerSpaceRoleId: number;
     let scenarioSpaceRoleId:number;
+    let scenarioJoinerSpaceRoleId:number;
+    let scenarioDeleteSpaceRoldId:number;
 
     let currTime: string;
     let accessToken: string;
     let secondAccessToken: string;
-    let noJoinerAccessToken: string;
+    let joinerAccessToken: string;
 
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -142,7 +148,7 @@ describe('Space Test', () => {
 
 
         const noJoin = await entityManager.insert(User, {
-            userId: targetNoJoinerUserId,
+            userId: targetJoinerUserId,
             ...userDto.signUp()
         });
 
@@ -179,7 +185,7 @@ describe('Space Test', () => {
         expect(secondOwnerToken).toBeTruthy();
 
         const noJoinerToken = jwt.signAccessToken({
-            userId: targetNoJoinerUserId,
+            userId: targetJoinerUserId,
             type: 'AccessToken'
         });
 
@@ -187,7 +193,7 @@ describe('Space Test', () => {
 
         accessToken = ownerToken;
         secondAccessToken = secondOwnerToken;
-        noJoinerAccessToken = noJoinerToken;
+        joinerAccessToken = noJoinerToken;
 
     });
 
@@ -370,6 +376,8 @@ describe('Space Test', () => {
                     expect(getSpaceRoleList.length).toBe(6);
                     
                     scenarioSpaceRoleId = getSpaceRoleList[1].spaceRoleId;
+                    scenarioJoinerSpaceRoleId = getSpaceRoleList[2].spaceRoleId;
+                    scenarioDeleteSpaceRoldId = getSpaceRoleList[3].spaceRoleId;
 
                 })
 
@@ -407,14 +415,10 @@ describe('Space Test', () => {
         });
 
         /** 유저의 참여는 위에서 테스트 완료 */
-        it('시나리오 : 공간 참여', async() => {
+        it('시나리오 : 공간 참여 Admin', async() => {
 
             const spaceRole = await spaceRepo.getSpaceRoleCodeByRoleId(scenarioSpaceRoleId);
 
-            const spaceCodeList = await entityManager.find(SpaceRoleCode);
-
-            console.log('1:', spaceCodeList);
-            
             expect(spaceRole).toBeTruthy();
 
             const send : PostSpaceJoinDto = {
@@ -426,16 +430,35 @@ describe('Space Test', () => {
                 .set('Authorization', `Bearer ${secondAccessToken}`)
                 .send(send)
                 .then(async() => {
-                    console.log(2, scenarioSpaceId,
-                        targetSecondUserId,
-                        scenarioSpaceRoleId);
-                    
+
                     const spaceUserRole = await spaceRepo.getSpaceUserRoleByUserId(
                         targetSecondUserId
                     );
 
-                    console.log(3, spaceUserRole[0].spaceId, spaceUserRole[0].spaceRoleId, spaceRole?.spaceRoleId);
+                    expect(spaceUserRole).toBeTruthy();
+
+                });
+        });
+
+        it('시나리오 : 공간 참여 Joiner', async() => {
+
+            const spaceRole = await spaceRepo.getSpaceRoleCodeByRoleId(scenarioJoinerSpaceRoleId);
+
+            expect(spaceRole).toBeTruthy();
+
+            const send : PostSpaceJoinDto = {
+                joinCode: spaceRole?.code!
+            };
+
+            await req
+                .post(`/space/${scenarioSpaceId}/join`)
+                .set('Authorization', `Bearer ${joinerAccessToken}`)
+                .send(send)
+                .then(async() => {
                     
+                    const spaceUserRole = await spaceRepo.getSpaceUserRoleByUserId(
+                        targetJoinerUserId
+                    );
 
                     expect(spaceUserRole).toBeTruthy();
 
@@ -448,16 +471,62 @@ describe('Space Test', () => {
 
         it('공간에 참여 필요', async () => {
 
+            const insert = await entityManager.insert(User, {
+                userId: 4,
+                ...userDto.signUp()
+            });
+
+            expect(insert.generatedMaps.length).toBe(1);
+
+            const dummyToken = jwt.signAccessToken({
+                userId: 4,
+                type: 'AccessToken'
+            });
+
             await req
                 .patch(`/space/owner/${scenarioSpaceId}`)
-                .set('Authorization', `Bearer ${noJoinerAccessToken}`)
+                .set('Authorization', `Bearer ${dummyToken}`)
                 .query(query)
                 .then((res) => {
 
                     const { body } = res;
 
                     expect(body['message']).toBe('잘못된 요청(공간 참여자가 아님)');
-                    expect(body['statusCode']).toBe(403)
+                    expect(body['statusCode']).toBe(403);
+
+                })
+
+        });
+
+        it('소유자만 사용할 수 없음', async () => {
+
+            await req
+                .patch(`/space/owner/${scenarioSpaceId}`)
+                .set('Authorization', `Bearer ${secondAccessToken}`)
+                .query(query)
+                .then((res) => {
+
+                    const { body } = res;
+
+                    expect(body['message']).toBe('소유자만 이용할 수 있습니다.');
+                    expect(body['statusCode']).toBe(401)
+
+                })
+
+        });
+
+        it('참여자는 사용할 수 없음', async () => {
+
+            await req
+                .delete(`/space/admin/${scenarioSpaceId}/${scenarioSpaceRoleId}`)
+                .set('Authorization', `Bearer ${joinerAccessToken}`)
+                .query(query)
+                .then((res) => {
+
+                    const { body } = res;
+
+                    expect(body['message']).toBe('일반 참여자는 사용할 수 없습니다.');
+                    expect(body['statusCode']).toBe(401)
 
                 })
 
@@ -465,13 +534,106 @@ describe('Space Test', () => {
 
     });
 
-    // describe("공간 수정", () => {
+    describe("공간 삭제", () => {
 
-    //     describe("공간 이름 및 로고 수정", () => {
+        describe("역할 삭제, DELETE /space/admin/:spaceId/:spaceRoleid", () => {
 
-            
-    //     })
-    // })
+            it('사용중인 역할', async () => {
+
+                try {
+
+                    await controller.deleteSpaceRole({
+                        spaceId: scenarioSpaceId,
+                        spaceRoleId: scenarioDeleteSpaceRoldId
+                    });
+
+                } catch (e) {
+
+                    if (e instanceof CustomException) expect(e['errorCode']).toBe(ECustomExceptionCode['ROLE-002']);
+                    if (e instanceof CustomException) expect(e['statusCode']).toBe(400);
+
+                }
+
+            });
+
+            it('시나리오 : 역할 삭제', async () => {
+
+                const isUsedSpaceRoleSpyOn = jest.spyOn(SpaceRepository.prototype, 'getSpaceUserRoleBySpaceRoleId')
+                    .mockResolvedValue(new SpaceUserRole())
+
+                await req
+                    .delete(`/space/admin/${scenarioSpaceId}/${scenarioDeleteSpaceRoldId}`)
+                    .set('Authorization', `Bearer ${secondAccessToken}`)
+                    .query(query)
+                    .then(async() => {
+
+                        const getDeletedSpaceRole = await spaceRepo.getSpaceRoleBySpaceRoleId(scenarioDeleteSpaceRoldId);
+                        expect(getDeletedSpaceRole).toBeFalsy();
+
+                        const getDeletedSpaceRoleWithDeleted = await entityManager.findOne(SpaceRole, {
+                            where: {
+                                spaceRoleId: scenarioDeleteSpaceRoldId
+                            },
+                            withDeleted: true
+                        });
+                        expect(getDeletedSpaceRoleWithDeleted).toBeTruthy();
+
+                        expect(isUsedSpaceRoleSpyOn).toHaveBeenCalledTimes(1);
+
+                    });
+
+            });
+
+        });
+
+        describe("공간 삭제, DELETE /space/owner/:spaceId", () => {
+
+            it('시나리오 : 공간 삭제', async () => {
+
+                await req
+                    .delete(`/space/owner/${scenarioSpaceId}`)
+                    .set('Authorization', `Bearer ${accessToken}`)
+                    .query(query)
+                    .then(async () => {
+
+                        const deletedSpace = await spaceRepo.getSpaceById(scenarioSpaceId);
+                        const withDeletedSpace = await entityManager.findOne(Space, {
+                            where: {
+                                spaceId: scenarioSpaceId
+                            },
+                            withDeleted: true
+                        });
+                        expect(deletedSpace).toBeFalsy();
+                        expect(withDeletedSpace).toBeTruthy();
+
+                        const deletedSpaceRole = await spaceRepo.getSpaceRoleListBySpaceId(scenarioSpaceId);
+                        const withDeletedSpaceRole = await entityManager.find(SpaceRole, {
+                            where: {
+                                spaceId: scenarioSpaceId
+                            },
+                            withDeleted: true
+                        });
+                        expect(deletedSpaceRole.length).toBe(0);
+                        expect(withDeletedSpaceRole.length).toBeGreaterThanOrEqual(1);
+
+                        const deletedSpaceUserRoleList = await spaceRepo.getSpaceUserRoleListBySpaceId(scenarioSpaceId);
+                        const withDeletedSpaceUserRoleList = await entityManager.find(SpaceUserRole, {
+                            where: {
+                                spaceId: scenarioSpaceId
+                            },
+                            withDeleted: true
+                        });
+                        expect(deletedSpaceUserRoleList.length).toBe(0);
+                        expect(withDeletedSpaceUserRoleList.length).toBeGreaterThanOrEqual(1);
+
+
+                    })
+
+            });
+
+        });
+
+    });
 
     afterAll(async () => {
 
