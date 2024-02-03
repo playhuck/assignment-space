@@ -34,6 +34,7 @@ import { Space } from '@entities/space.entity';
 import { SpaceRoleCode } from '@entities/space.role.code.entity';
 import { PatchSpaceNameDto } from '@dtos/spaces/patch.space.name.dto';
 import { PatchSpaceLogoDto } from '@dtos/spaces/patch.space.logo.dto';
+import { PatchSpaceRoleDto } from '@dtos/spaces/patch.space.role.dto';
 
 jest.mock('@aws-sdk/s3-request-presigner', () => ({
     getSignedUrl: jest.fn(() => {
@@ -48,6 +49,7 @@ jest.mock('@aws-sdk/client-s3', () => ({
     })),
     PutObjectCommand: jest.fn(),
     DeleteObjectCommand: jest.fn(),
+    GetObjectCommand: jest.fn()
 }));
 
 describe('Space Test', () => {
@@ -469,58 +471,6 @@ describe('Space Test', () => {
 
     });
 
-    describe("공간 수정", () => {
-
-        it('시나리오 : 공간이름 수정, PATCH /space/owner/:spaceId/name', async() => {
-
-            const spaceName = 'NAME_UPDATE'; 
-            const send : PatchSpaceNameDto = {
-                spaceName
-            };
-            await req
-                .patch(`/space/owner/${scenarioSpaceId}/name`)
-                .set('Authorization', `Bearer ${accessToken}`)
-                .send(send)
-                .query(query)
-                .then(async() => {
-
-                    const space = await spaceRepo.getSpaceById(scenarioSpaceId);
-
-                    expect(space?.spaceName).toBe(spaceName);
-                });
-        });
-
-        it('시나리오 : 공간로고 수정, PATCH /space/owner/:spaceId/logo', async () => {
-
-            const spaceLogo = 'LOGO_UPDATE.png';
-            const send: PatchSpaceLogoDto = {
-                spaceLogo,
-                spaceLogoExtension: 'image'
-            };
-
-            await req
-                .patch(`/space/owner/${scenarioSpaceId}/logo`)
-                .set('Authorization', `Bearer ${accessToken}`)
-                .send(send)
-                .query(query)
-                .then(async (res) => {
-
-                    const { body }: {
-                        body: {
-                            getPresignedUrl: string
-                        }
-                    } = res;
-
-                    expect(body.getPresignedUrl).toBe('hello');
-
-                    const space = await spaceRepo.getSpaceById(scenarioSpaceId);
-
-                    expect(space?.spaceLogo).toBe(spaceLogo);
-                });
-
-        });
-    })
-
     describe("권한", () => {
 
         it('공간에 참여 필요', async () => {
@@ -584,6 +534,105 @@ describe('Space Test', () => {
 
                 })
 
+        });
+
+    });
+
+    describe("공간 수정", () => {
+
+        it('시나리오 : 공간이름 수정, PATCH /space/owner/:spaceId/name', async() => {
+
+            const spaceName = 'NAME_UPDATE'; 
+            const send : PatchSpaceNameDto = {
+                spaceName
+            };
+            await req
+                .patch(`/space/owner/${scenarioSpaceId}/name`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send(send)
+                .query(query)
+                .then(async() => {
+
+                    const space = await spaceRepo.getSpaceById(scenarioSpaceId);
+
+                    expect(space?.spaceName).toBe(spaceName);
+                });
+        });
+
+        it('시나리오 : 공간로고 수정, PATCH /space/owner/:spaceId/logo', async () => {
+
+            const spaceLogo = 'LOGO_UPDATE.png';
+            const send: PatchSpaceLogoDto = {
+                spaceLogo,
+                spaceLogoExtension: 'image'
+            };
+
+            await req
+                .patch(`/space/owner/${scenarioSpaceId}/logo`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send(send)
+                .query(query)
+                .then(async (res) => {
+
+                    const { body }: {
+                        body: {
+                            getPresignedUrl: string
+                        }
+                    } = res;
+
+                    expect(body.getPresignedUrl).toBe('hello');
+
+                    const space = await spaceRepo.getSpaceById(scenarioSpaceId);
+
+                    expect(space?.spaceLogo).toBe(spaceLogo);
+                });
+
+        });
+
+        describe("공간 수정", () => {
+
+            it('시나리오 : 공간이름 수정, PATCH /space/owner/:spaceId/name', async() => {
+    
+                const spaceName = 'NAME_UPDATE'; 
+                const send : PatchSpaceNameDto = {
+                    spaceName
+                };
+                await req
+                    .patch(`/space/owner/${scenarioSpaceId}/name`)
+                    .set('Authorization', `Bearer ${accessToken}`)
+                    .send(send)
+                    .query(query)
+                    .then(async() => {
+    
+                        const space = await spaceRepo.getSpaceById(scenarioSpaceId);
+    
+                        expect(space?.spaceName).toBe(spaceName);
+                    });
+            });
+    
+            it('시나리오 : 공간역할 수정, PATCH /space/owner/:spaceId/role', async () => {
+
+                const send: PatchSpaceRoleDto = {
+                    spaceRoleId: scenarioSpaceRoleId,
+                    userId: targetJoinerUserId
+                };
+    
+                await req
+                    .patch(`/space/owner/${scenarioSpaceId}/role`)
+                    .set('Authorization', `Bearer ${accessToken}`)
+                    .send(send)
+                    .query(query)
+                    .then(async () => {
+    
+                        const getUserSpaceRelation = await spaceRepo.getUserSpaceRelation(
+                            scenarioSpaceId,
+                            targetJoinerUserId
+                        );
+    
+                        expect(getUserSpaceRelation?.spaceRole.roleLevel).toBe('admin');
+                    });
+    
+            });
         });
 
     });

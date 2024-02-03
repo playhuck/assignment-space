@@ -1,6 +1,6 @@
-import { IUser } from "./i.user";
+import { IUser, IUserId } from "./i.user";
 
 export interface ICustomRes extends Response {
     user: IUser;
-    userId: number;
+    userId: IUserId;
 } 

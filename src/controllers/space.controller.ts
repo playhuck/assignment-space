@@ -23,6 +23,7 @@ import { SpaceParamDto } from '@dtos/spaces/space.param.dto';
 import { SpaceRoleParamDto } from '@dtos/spaces/space.role.param.dto';
 
 import { IUser } from '@models/interfaces/i.user';
+import { PatchSpaceRoleDto } from '@dtos/spaces/patch.space.role.dto';
 
 @UseGuards(JwtUserGuard)
 @Controller('space')
@@ -91,18 +92,23 @@ export class SpaceController {
         );
 
         return { getPresignedUrl };
-        
+
     };
 
     /** 공간 구성원 역할 수정 */
     @UseGuards(SpaceRoleGuard)
     @Patch('/owner/:spaceId/role')
-    async updateSpaceRole() { };
+    async updateSpaceRole(
+        @Param() param: SpaceParamDto,
+        @Body() body: PatchSpaceRoleDto
+    ) {
 
-    /** 소유권 할당 */
-    @UseGuards(SpaceRoleGuard)
-    @Patch('/owner/:spaceId/owner-assgin')
-    async updateSpaceOwner() { };
+        await this.service.updateSpaceRole(
+            param,
+            body
+        );
+
+    };
 
     /** 공간 삭제 */
     @UseGuards(SpaceRoleGuard)
@@ -128,9 +134,23 @@ export class SpaceController {
     };
 
     @Get('/:spaceId')
-    async getSpace() { };
+    async getSpace(
+        @Param() param: SpaceParamDto
+    ) {
+
+        const space = await this.service.getSpace(param);
+
+        return { space };
+    };
 
     @Get('/:userId/list')
-    async getMySpaceList() { };
+    async getMySpaceList(
+        @User() user: IUser
+    ) {
+
+        const getMySpaceList = await this.service.getMySpaceList(user);
+
+        return { getMySpaceList };
+    };
 
 }

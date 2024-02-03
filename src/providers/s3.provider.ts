@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { IS3_ENV } from '@models/interfaces/i.config';
 import { ConfigService } from '@nestjs/config';
 import { TFileExtension } from '@models/types/t.common';
+import { CustomException } from '@common/exception/custom.exception';
+import { ECustomExceptionCode } from '@models/enums/e.exception.code';
 
 @Injectable()
 export class S3Provider {
@@ -29,15 +31,15 @@ export class S3Provider {
         });
     };
 
-    async getPresignedUrl(
+    async putPresignedUrl(
         userId: number,
         spaceId: number,
-        prefix: string,
+        fileName: string,
         fileExtension: TFileExtension
     ) {
         const { BUCKET_NAME } = this.S3_ENV;
 
-        const key = `${userId}/${spaceId}/${prefix}`;
+        const key = `${userId}/${spaceId}/${fileName}`;
 
         const contentType = fileExtension === 'image' ?
             'image/*' : fileExtension === 'file' ?
@@ -51,6 +53,37 @@ export class S3Provider {
             expiresIn: 3600 * 100
         });
     };
+
+    async getPresignedUrl(
+        Key: string
+    ) {
+
+        try {
+
+            const { BUCKET_NAME } = this.S3_ENV;
+
+            const getObject = new GetObjectCommand({
+                Bucket: BUCKET_NAME,
+                Key
+            });
+
+            const getPresignedUrl = await getSignedUrl(
+                this.s3Client as any, getObject as any, {
+                expiresIn: 300
+            });
+
+            return getPresignedUrl;
+
+        } catch (e) {
+            console.log(e);
+            
+            throw new CustomException(
+                `S3 ERROR : ${JSON.stringify(e)}`,
+                ECustomExceptionCode['AWS-S3-EXCEPTION'],
+                500
+            )
+        };
+    }
 
     async deleteObject(key: string) {
 
@@ -70,6 +103,6 @@ export class S3Provider {
 
         }
 
-    }
+    };
 
 }

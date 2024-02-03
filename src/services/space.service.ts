@@ -24,6 +24,7 @@ import { PostSpaceJoinDto } from '@dtos/spaces/post.space.join.dto';
 import { SpaceRoleParamDto } from '@dtos/spaces/space.role.param.dto';
 import { PatchSpaceNameDto } from '@dtos/spaces/patch.space.name.dto';
 import { PatchSpaceLogoDto } from '@dtos/spaces/patch.space.logo.dto';
+import { PatchSpaceRoleDto } from '@dtos/spaces/patch.space.role.dto';
 
 @Injectable()
 export class SpaceService {
@@ -161,7 +162,7 @@ export class SpaceService {
                 let getPresignedUrl;
 
                 if (body?.spaceLogo) {
-                    getPresignedUrl = await this.s3.getPresignedUrl(
+                    getPresignedUrl = await this.s3.putPresignedUrl(
                         user.userId,
                         spaceId,
                         body?.spaceLogo,
@@ -283,7 +284,7 @@ export class SpaceService {
                     )
                 };
 
-                const getPresignedUrl = await this.s3.getPresignedUrl(
+                const getPresignedUrl = await this.s3.putPresignedUrl(
                     user.userId,
                     spaceId,
                     spaceLogo,
@@ -302,15 +303,40 @@ export class SpaceService {
 
     };
 
-    async updateSpaceRole() {
+    async updateSpaceRole(
+        param: SpaceParamDto,
+        body: PatchSpaceRoleDto
+    ) {
         await this.db.transaction(
             async (entityManager: EntityManager, args) => {
 
-                const { } = args;
+                const { param, body } = args;
+                const {
+                    spaceRoleId: targetSpaceRoleId,
+                    userId: targetUserId
+                } = body;
+                const { spaceId } = param;
+
+                const getSpaceUserRoleByUserId = await this.spaceRepo.updateSpaceRole(
+                    entityManager,
+                    spaceId,
+                    targetSpaceRoleId,
+                    targetUserId
+                );
+                if (getSpaceUserRoleByUserId.affected !== 1) {
+                    throw new CustomException(
+                        "역할 변경에 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+
             }, {
+            param,
+            body
         }
         );
-    }
+    };
 
     async deleteSpace(
         user: IUser,
@@ -394,9 +420,77 @@ export class SpaceService {
         )
     };
 
-    async getSpace() { };
+    async getSpace(
+        param: SpaceParamDto
+    ) {
 
-    async getMySpaceList() { };
+        const { spaceId } = param;
+
+        const spaceRelation = await this.spaceRepo.getSpaceRelation(spaceId);
+        if (!spaceRelation) {
+            throw new CustomException(
+                "공간정보를 찾을 수 없습니다.",
+                ECustomExceptionCode["SPACE-001"],
+                403
+            )
+        };
+
+        const { spaceRoles, spaceLogo, spaceName } = spaceRelation;
+
+        const spaceUserRoles = await Promise.all(
+            spaceRelation.spaceUserRoles.slice().map(async (userRole, i) => {
+                const spaceRole = spaceRelation.spaceRoles.find((role) => role.spaceRoleId === userRole.spaceRoleId);
+                if (spaceRole) {
+                    return {
+                        userId: userRole.userId,
+                        spaceRoleId: userRole.spaceRoleId,
+                        roleName: spaceRole.roleName,
+                        roleLevel: spaceRole.roleLevel,
+                    };
+                }
+            }));
+
+        return {
+            spaceUserRoles,
+            spaceRoles,
+            spaceId,
+            spaceLogo,
+            spaceName
+        }
+    };
+
+    async getMySpaceList(
+        user: IUser
+    ) {
+
+        const { userId } = user;
+
+        const getMyUserRoleList = await this.spaceRepo.getSpaceUserRoleByUserId(userId);
+
+        const getMySpaceList = await Promise.all(
+            getMyUserRoleList.map(async (userRole, i) => {
+
+                const { spaceId } = userRole;
+
+                const space = await this.spaceRepo.getSpaceById(spaceId);
+                if (!space) {
+                    throw new CustomException(
+                        "공간을 찾을 수 없습니다.",
+                        ECustomExceptionCode["SPACE-001"],
+                        403
+                    )
+                };
+                const { spaceLogo, spaceName } = space; console.log(`${userId}/${spaceId}/${spaceLogo}`)
+                return {
+                    spaceId,
+                    spaceName,
+                    spaceLogo: await this.s3.getPresignedUrl(`${userId}/${spaceId}/${spaceLogo}`)
+                };
+            }));
+
+        return getMySpaceList;
+
+    };
 
     public getRoleType(defaultRole: TRole, roles?: TAdminRole | undefined) {
         const roleType =

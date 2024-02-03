@@ -146,25 +146,6 @@ export class SpaceRepository {
         return spaceUserRoleList;
     }
 
-    async getUserSpaceRelation(
-        spaceId: number,
-        userId: number
-    ){
-        const userSpaceRelaiton = await this.userRoleRepo.findOne({
-            where: {
-                spaceId,
-                userId
-            },
-            relations: {
-                spaceRole: true,
-                space: true
-            }
-        });
-
-        return userSpaceRelaiton
-        
-    };
-
     async getSpaceRoleCodeByCode(
         code: string
     ) {
@@ -189,6 +170,55 @@ export class SpaceRepository {
         });
 
         return codeEntity
+    };
+
+    async getUserSpaceRelation(
+        spaceId: number,
+        userId: number
+    ){
+        const userSpaceRelaiton = await this.userRoleRepo.findOne({
+            where: {
+                spaceId,
+                userId
+            },
+            relations: {
+                spaceRole: true,
+                space: true
+            }
+        });
+
+        return userSpaceRelaiton
+        
+    };
+
+    async getSpaceRelation(
+        spaceId: number
+    ){
+
+        const spaceRelation = await this.spaceRepo.findOne({
+            where: {
+                spaceId
+            },
+            relations: ['spaceRoles', 'spaceUserRoles'],
+            select: {
+                spaceId: true,
+                userId: true,
+                spaceName: true,
+                spaceLogo: true,
+                spaceRoles : {
+                    spaceRoleId: true,
+                    roleName: true,
+                    roleLevel: true
+                },
+                spaceUserRoles: {
+                    spaceRoleId: true,
+                    userId: true
+                }
+            }
+        });
+
+        return spaceRelation
+        
     }
 
     async insertSpace(
@@ -314,6 +344,24 @@ export class SpaceRepository {
 
         return updateSpaceLogo;
     };
+
+    async updateSpaceRole(
+        entityManager: EntityManager,
+        spaceId: number,
+        targetSpaceRoleId: number,
+        targetUserRoleId: number
+    ){
+
+        const updateSpaceRole = await entityManager.update(SpaceUserRole, {
+            spaceId,
+            userId: targetUserRoleId
+        }, {
+            spaceRoleId: targetSpaceRoleId
+        });
+
+        return updateSpaceRole;
+
+    }
 
     async deleteSpaceRole(
         entityManager: EntityManager,
