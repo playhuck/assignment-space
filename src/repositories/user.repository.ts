@@ -25,7 +25,8 @@ export class UserRepository {
                 email: true,
                 firstName: true,
                 lastName: true,
-                profileImage: true
+                profileImage: true,
+                userId: true
             }
         });
 

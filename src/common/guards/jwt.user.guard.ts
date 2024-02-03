@@ -52,7 +52,9 @@ export class JwtUserGuard implements CanActivate {
             )
         };
 
-        response["userId"] = payload['userId'];
+        const { password, spaces, spaceUserRoles, ...data } = user;
+
+        response["user"] = data;
 
         return true;
     };

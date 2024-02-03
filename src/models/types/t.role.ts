@@ -6,4 +6,6 @@ export type TDefaultRole = Pick<SpaceRole,
 export type TAdminRole = Pick<SpaceRole,
     'spaceChatAdminDelete' | 'spacePostAdminDelete' | 'spacePostNotice' | 'spaceRoleDelete' | 'spaceForcedExit'>;
 
-export type TRole = 'owner' | 'admin' | 'joiner' | 'custom';
+export type TRole = TRoleLevel | 'custom';
+
+export type TRoleLevel = 'owner' | 'admin' | 'joiner';

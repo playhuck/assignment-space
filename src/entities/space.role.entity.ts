@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMan
 import { Space } from './space.entity';
 import { SpaceUserRole } from './space.user.role.entity';
 import { CustomBaseEntity } from './base.entity';
+import { TRoleLevel } from '@models/types/t.role';
 
 @Entity('space_role')
 export class SpaceRole extends CustomBaseEntity {
@@ -18,18 +19,20 @@ export class SpaceRole extends CustomBaseEntity {
     spaceId!: number;
 
     @Column({
-        name: 'user_id',
-        type: 'int'
-    })
-    userId!: number;
-
-    @Column({
         name: 'role_name',
         type: 'varchar',
         length: 50,
         nullable: false
     })
     roleName!: string;
+
+    @Column({
+        name: 'role_level',
+        type: 'varchar',
+        length: 50,
+        nullable: false
+    })
+    roleLevel!: TRoleLevel;
 
     @Column({
         name: 'space_update',
@@ -94,10 +97,10 @@ export class SpaceRole extends CustomBaseEntity {
     })
     spaceChatAdminDelete!: number;
 
-    @ManyToOne(() => Space, space => space.spaceId)
-    @JoinColumn({ name: 'space_id' })
+    @ManyToOne(() => Space, (space) => space.spaceId, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'space_id'})
     space!: Space;
 
-    @OneToMany(() => SpaceUserRole, (spaceUserRole) => spaceUserRole.spaceRole)
+    @OneToMany(() => SpaceUserRole, (userRole) => userRole.spaceRole, { onDelete: 'CASCADE' })
     spaceUserRoles!: SpaceUserRole[];
 }

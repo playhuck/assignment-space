@@ -2,10 +2,7 @@ import { TAdminRole, TDefaultRole } from "@models/types/t.role";
 
 const OWNER_ROLE: TDefaultRole = {
     spaceOwnerAssign: 1,
-    spaceChatAdminDelete: 1,
     spaceDelete: 1,
-    spaceForcedExit: 1,
-    spacePostAdminDelete: 1,
     spacePostNotice: 1,
     spaceRoleDelete: 1,
     spaceRoleUpdate: 1,
@@ -26,19 +23,29 @@ const ADMIN_ROLE: TAdminRole = {
 
 const NOT_ADMIN_ROLE = {
     ...Object.fromEntries(Object.entries(ADMIN_ROLE).map(([key, _]) => [key, 0])),
-};
+} as TAdminRole;
 
-export const OWNER = {
+const OWNER = {
     ...OWNER_ROLE,
     ...ADMIN_ROLE
 };
 
-export const ADMIN = {
+const ADMIN = {
     ...NOT_OWNER_ROLE,
     ...ADMIN_ROLE
 };
 
-export const JOINER = {
+const JOINER = {
     ...NOT_OWNER_ROLE,
     ...NOT_ADMIN_ROLE
 };
+
+export {
+    OWNER_ROLE,
+    OWNER,
+    NOT_ADMIN_ROLE,
+    NOT_OWNER_ROLE,
+    ADMIN,
+    ADMIN_ROLE,
+    JOINER
+}

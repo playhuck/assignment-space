@@ -21,16 +21,35 @@ export class SpaceRoleGuard implements CanActivate {
         const res: ICustomRes = await context.switchToHttp().getResponse();
         const query = req.query;
 
-        console.log(res.userId);
-        
-
         const rolePath = query?.isTest ?
-            req.path.split('/')[1] as TDomainPath :
+            req.path.split('/')[2] as TDomainPath :
             req.path.split('/')[3] as TDomainPath;
 
         const spaceId: number = query?.isTest ?
-            +req.path.split('/')[2] :
+            +req.path.split('/')[3] :
             +req.path.split('/')[4];
+
+        const isSpaceUser = await this.spaceRepo.getSpaceUserRoleForGuard(
+            spaceId,
+            res.user.userId
+        );
+
+        if (!isSpaceUser) {
+            throw new CustomException(
+                "잘못된 요청입니다.",
+                ECustomExceptionCode["INTERVAL-SERVER-ERROR"],
+                500
+            )
+        };
+
+        const getUserSpaceRelation = await this.spaceRepo.getUserSpaceRelation(spaceId, res?.user.userId);
+        if (!getUserSpaceRelation) {
+            throw new CustomException(
+                "잘못된 요청입니다.",
+                ECustomExceptionCode["INTERVAL-SERVER-ERROR"],
+                500
+            )
+        };
 
         if (rolePath === 'owner') {
 
@@ -43,7 +62,7 @@ export class SpaceRoleGuard implements CanActivate {
                 )
             };
 
-            if (res.userId !== space.userId) {
+            if (getUserSpaceRelation.spaceRole.roleLevel !== 'owner') {
                 throw new CustomException(
                     "소유자만 이용할 수 있습니다.",
                     ECustomExceptionCode["ROLE-001"],
@@ -52,7 +71,6 @@ export class SpaceRoleGuard implements CanActivate {
             };
 
         };
-
 
         return true
     };

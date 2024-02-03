@@ -1,9 +1,10 @@
-import { TRole, TDefaultRole } from "@models/types/t.role";
+import { TAdminRole, TRole, TRoleLevel } from "@models/types/t.role";
 
 export interface IRoleList {
 
     defaultRole: TRole;
     roleName: string;
-    role?: TDefaultRole;
+    roleLevel: TRoleLevel;
+    roles: TAdminRole;
 
 };

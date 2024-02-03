@@ -1,6 +1,6 @@
-import { User } from "@entities/user.entity";
+import { IUser } from "./i.user";
 
 export interface ICustomRes extends Response {
-    user: Pick<User, 'firstName' | 'lastName' | 'profileImage' | 'email' | 'userId'>;
+    user: IUser;
     userId: number;
 } 

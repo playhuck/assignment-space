@@ -49,7 +49,7 @@ export class Space extends CustomBaseEntity {
     })
     joinerCode!: string;
 
-    @ManyToOne(() => User, user => user.userId)
+    @ManyToOne(() => User, user => user.spaces, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     user!: User;
 

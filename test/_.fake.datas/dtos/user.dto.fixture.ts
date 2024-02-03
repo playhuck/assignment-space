@@ -15,8 +15,8 @@ export class UserDtoFixture {
         const fakePassword = this.generateRandomPassword;
         return {
             email: email ? email : this.generateRandomEmail,
-            firstName: firstName ? firstName : faker.name.firstName(),
-            lastName: lastName ? lastName : faker.name.lastName(),
+            firstName: firstName ? firstName : this.generateRandomFirstName,
+            lastName: lastName ? lastName : this.generateRandomLastName,
             password: password ? password : fakePassword,
             passwordCheck: passwordCheck ? passwordCheck : fakePassword
         }
@@ -52,5 +52,13 @@ export class UserDtoFixture {
 
     get generateRandomNumber() {
         return faker.datatype.number();
-    }
+    };
+
+    get generateRandomFirstName() {
+        return faker.name.firstName();
+    };
+
+    get generateRandomLastName() {
+        return faker.name.lastName();
+    };
 }

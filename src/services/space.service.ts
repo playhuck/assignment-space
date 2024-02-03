@@ -1,18 +1,24 @@
-import { ADMIN, OWNER } from '@common/constants/role.constant';
-import { CustomException } from '@common/exception/custom.exception';
-import { PostSpaceDto } from '@dtos/spaces/post.space.dto';
-import { User } from '@entities/user.entity';
-import { ECustomExceptionCode } from '@models/enums/e.exception.code';
-import { TDefaultRole, TRole } from '@models/types/t.role';
 import { Injectable } from '@nestjs/common';
+import { EntityManager, InsertResult } from 'typeorm';
+import { ResultSetHeader } from 'mysql2';
+
 import { DayjsProvider } from '@providers/dayjs.provider';
 import { RandomProvider } from '@providers/random.provider';
 import { S3Provider } from '@providers/s3.provider';
-import { SpaceRepository } from '@repositories/space.repository';
-import { UserRepository } from '@repositories/user.repository';
+
 import { DbUtil } from '@utils/db.util';
-import { ResultSetHeader } from 'mysql2';
-import { EntityManager, InsertResult } from 'typeorm';
+
+import { SpaceRepository } from '@repositories/space.repository';
+import { UserRepository } from '@repositories/user.repository'
+
+import { CustomException } from '@common/exception/custom.exception';
+import { ECustomExceptionCode } from '@models/enums/e.exception.code';
+
+import { PostSpaceDto } from '@dtos/spaces/post.space.dto';
+import { IUser } from '@models/interfaces/i.user';
+import { TAdminRole, TDefaultRole, TRole } from '@models/types/t.role';
+
+import { OWNER, ADMIN_ROLE, NOT_ADMIN_ROLE } from '@common/constants/role.constant';
 
 @Injectable()
 export class SpaceService {
@@ -30,27 +36,25 @@ export class SpaceService {
     ) { }
 
     async postSpace(
-        userId: number,
+        user: IUser,
         body: PostSpaceDto
     ) {
 
         const getPresignedUrl = await this.db.transaction(
             async (entityManager: EntityManager, args) => {
 
-                const { body, userId } = args;
-                const { roleList } = body;
+                const { body, user } = args;
+                const { roleList, spaceOwnerRoleName } = body;
 
                 const createdAt = this.dayjs.getDatetimeByOptions('YYYY-MM-DD HH:mm:ss');
                 const adminCode = await this.random.generateRandomString(8);
                 const joinerCode = await this.random.generateRandomString(8);
 
-                const user = await this.userRepo.getUserById(userId);
-
                 const insertSpace = await this.spaceRepo.insertSpace(
                     entityManager,
                     args.body,
                     createdAt,
-                    user!,
+                    user.userId,
                     adminCode,
                     joinerCode
                 );
@@ -62,18 +66,52 @@ export class SpaceService {
                     )
                 };
 
-                const { insertId } = insertSpace.raw as ResultSetHeader;
+                const { insertId : spaceId } = insertSpace.raw as ResultSetHeader;
 
-                await Promise.all(roleList.map(async (roles, i) => {
+                const insertOwnerSpaceRole = await this.spaceRepo.insertSpaceRole(
+                    entityManager,
+                    spaceId,
+                    spaceOwnerRoleName,
+                    'owner',
+                    createdAt,
+                    OWNER
+                );
 
-                    const { roleName, defaultRole } = roles;
+                if (insertOwnerSpaceRole.generatedMaps.length !== 1) {
+                    throw new CustomException(
+                        "공간 소유주 역할 생성에 실패 했습니다.",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+                const { insertId : spaceRoleId } = insertOwnerSpaceRole.raw as ResultSetHeader;
 
-                    const roleType = this.getRoleType(defaultRole, roles.role);
+                const insertOwnerSpaceUserRole = await this.spaceRepo.insertSpaceUserRole(
+                    entityManager,
+                    spaceId,
+                    user.userId,
+                    spaceRoleId,
+                    createdAt
+                );
+                if (insertOwnerSpaceUserRole.generatedMaps.length !== 1) {
+                    throw new CustomException(
+                        "공간 소유주 역할 생성에 실패 했습니다.",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+                
+                await Promise.all(roleList.map(async (roleList, i) => {
+
+                    const { roleName, roleLevel, defaultRole, roles } = roleList;
+
+                    const roleType = this.getRoleType(defaultRole, roles);
 
                     const insertSpaceRole: InsertResult = await this.spaceRepo.insertSpaceRole(
                         entityManager,
-                        insertId,
+                        spaceId,
                         roleName,
+                        roleLevel,
                         createdAt,
                         roleType
                     );
@@ -92,8 +130,8 @@ export class SpaceService {
 
                 if (body?.spaceLogo) {
                     getPresignedUrl = await this.s3.getPresignedUrl(
-                        userId,
-                        insertId,
+                        user.userId,
+                        spaceId,
                         body?.spaceLogo,
                         body?.spaceLogoExtension
                     );
@@ -101,13 +139,25 @@ export class SpaceService {
 
                 return getPresignedUrl ? getPresignedUrl : undefined;
 
-            }, { body, userId });
+            }, { body, user });
 
         return getPresignedUrl;
 
     };
 
-    async updateSpace() { };
+    async postSpaceJoin(){}
+
+    async updateSpace(
+        spaceId: number
+    ) {
+        
+        await this.db.transaction(
+            async(entityManager, args) => {
+
+        }, { spaceId })
+    };
+
+    async updateSpaceRole(){}
 
     async deleteSpace() { };
 
@@ -117,11 +167,10 @@ export class SpaceService {
 
     async postJoinSpace() { };
 
-    private getRoleType(defaultRole: TRole, roles: TDefaultRole | undefined) {
+    public getRoleType(defaultRole: TRole, roles?: TAdminRole | undefined) {
         const roleType =
             defaultRole === 'admin' ?
-                ADMIN : defaultRole === 'owner' ?
-                    OWNER : roles as TDefaultRole
+                ADMIN_ROLE : defaultRole === 'joiner' ? NOT_ADMIN_ROLE : roles as TAdminRole
 
         return roleType;
     }

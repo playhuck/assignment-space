@@ -178,7 +178,7 @@ describe('User Authentication Test', () => {
 
         });
 
-        it('회원가입', async () => {
+        it('시나리오 : 회원가입', async () => {
 
             targetPassword = userDto.generateRandomPassword;
             targetEmail = userDto.generateRandomEmail;
@@ -235,7 +235,6 @@ describe('User Authentication Test', () => {
                 userId: 1,
                 spaces: new Array(),
                 createdAt: ' ',
-                spaceRoles: [],
                 spaceUserRoles: []
             });
 
@@ -276,7 +275,7 @@ describe('User Authentication Test', () => {
 
         });
 
-        it('로그인', async () => {
+        it('시나리오 : 로그인', async () => {
 
             const send: PostSignInDto = {
                 email: targetEmail,
