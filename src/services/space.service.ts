@@ -19,6 +19,8 @@ import { IUser } from '@models/interfaces/i.user';
 import { TAdminRole, TDefaultRole, TRole } from '@models/types/t.role';
 
 import { OWNER, ADMIN_ROLE, NOT_ADMIN_ROLE } from '@common/constants/role.constant';
+import { SpaceParamDto } from '@dtos/spaces/space.param.dto';
+import { PostSpaceJoinDto } from '@dtos/spaces/post.space.join.dto';
 
 @Injectable()
 export class SpaceService {
@@ -66,7 +68,7 @@ export class SpaceService {
                     )
                 };
 
-                const { insertId : spaceId } = insertSpace.raw as ResultSetHeader;
+                const { insertId: spaceId } = insertSpace.raw as ResultSetHeader;
 
                 const insertOwnerSpaceRole = await this.spaceRepo.insertSpaceRole(
                     entityManager,
@@ -84,7 +86,7 @@ export class SpaceService {
                         500
                     )
                 };
-                const { insertId : spaceRoleId } = insertOwnerSpaceRole.raw as ResultSetHeader;
+                const { insertId: spaceRoleId } = insertOwnerSpaceRole.raw as ResultSetHeader;
 
                 const insertOwnerSpaceUserRole = await this.spaceRepo.insertSpaceUserRole(
                     entityManager,
@@ -100,7 +102,7 @@ export class SpaceService {
                         500
                     )
                 };
-                
+
                 await Promise.all(roleList.map(async (roleList, i) => {
 
                     const { roleName, roleLevel, defaultRole, roles } = roleList;
@@ -145,19 +147,61 @@ export class SpaceService {
 
     };
 
-    async postSpaceJoin(){}
+    async postSpaceJoin(
+        user: IUser,
+        param: SpaceParamDto,
+        body: PostSpaceJoinDto
+    ) {
+
+        void await this.db.transaction(
+            async (entityManager: EntityManager, args) => {
+
+                const { user, param, body } = args;
+                const { userId } = user;
+                const { spaceId } = param;
+                const { joinCode } = body;
+
+                const space = await this.spaceRepo.getSpaceById(spaceId);
+                if(!space){
+                    throw new CustomException(
+                        "공간을 찾을 수 없습니다.",
+                        ECustomExceptionCode["SPACE-001"],
+                        403
+                    )
+                };
+                const { adminCode, joinerCode } = space;
+                const roleType = joinCode === adminCode ? 'admin' : 'joiner';
+
+                const codeActions = {
+                    admin: async() => {
+                        
+                        const insertSpaceUserRole = await this.spaceRepo
+                    },
+                    joiner: async() => {
+                      // adminCode에 대한 동작
+                      console.log('Admin code executed');
+                    },
+                };
+                
+
+            }, {
+            user,
+            param,
+            body
+        })
+    }
 
     async updateSpace(
         spaceId: number
     ) {
-        
-        await this.db.transaction(
-            async(entityManager, args) => {
 
-        }, { spaceId })
+        await this.db.transaction(
+            async (entityManager, args) => {
+
+            }, { spaceId })
     };
 
-    async updateSpaceRole(){}
+    async updateSpaceRole() { }
 
     async deleteSpace() { };
 
