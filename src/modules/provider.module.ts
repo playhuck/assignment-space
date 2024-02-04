@@ -19,16 +19,23 @@ import { SpaceRoleCode } from '@entities/space.role.code.entity';
 import { SpaceRole } from '@entities/space.role.entity';
 import { SpaceUserRole } from '@entities/space.user.role.entity';
 import { User } from '@entities/user.entity';
+import { Post } from '@entities/post.entity';
+import { PostFile } from '@entities/post.file.entity';
+import { PostRepository } from '@repositories/post.repository';
 
 @Global()
 @Module({
     imports: [
         TypeOrmModule.forFeature([
             User,
+
             Space,
             SpaceRole,
             SpaceUserRole,
-            SpaceRoleCode
+            SpaceRoleCode,
+            
+            Post,
+            PostFile
         ])
     ],
     providers: [
@@ -44,7 +51,8 @@ import { User } from '@entities/user.entity';
         S3Provider,
 
         UserRepository,
-        SpaceRepository
+        SpaceRepository,
+        PostRepository
     ],
     exports: [
         LoggerUtil,
@@ -59,7 +67,8 @@ import { User } from '@entities/user.entity';
         S3Provider,
 
         UserRepository,
-        SpaceRepository
+        SpaceRepository,
+        PostRepository
     ]
 })
 export class ProvidersModule { }

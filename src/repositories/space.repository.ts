@@ -4,15 +4,22 @@ import { EntityManager, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Space } from "@entities/space.entity";
 import { PostSpaceDto } from "@dtos/spaces/post.space.dto";
-import { User } from "@entities/user.entity";
 import { SpaceRole } from "@entities/space.role.entity";
-import { TAdminRole, TDefaultRole, TRoleLevel } from "@models/types/t.role";
+import { TAdminRole, TRoleLevel } from "@models/types/t.role";
 import { SpaceUserRole } from "@entities/space.user.role.entity";
 
 import { OWNER, NOT_OWNER_ROLE } from "@common/constants/role.constant";
-import { IUser } from "@models/interfaces/i.user";
 import { SpaceRoleCode } from "@entities/space.role.code.entity";
 import { TSortCreatedAt } from "@models/types/t.common";
+import {
+    IOnlySpace,
+    IOnlySpaceRole,
+    IOnlySpaceRoleCode,
+    IOnlySpaceUserRole,
+    ISpaceRelation,
+    ISpaceUserRoleRelationSpaceAndSpaceRole,
+    ISpaceUserRoleRelationSpaceRole
+} from "@models/interfaces/i.space.return";
 
 @Injectable()
 export class SpaceRepository {
@@ -25,9 +32,9 @@ export class SpaceRepository {
     ) {
     };
 
-    async getSpaceById(
+    async getSpaceById<T extends IOnlySpace>(
         spaceId: number
-    ){
+    ): Promise<T | null>{
 
         const space = await this.spaceRepo.findOne({
             where: {
@@ -35,14 +42,14 @@ export class SpaceRepository {
             }
         });
 
-        return space;
+        return space as T | null;
     };
 
     /** Space Role */
 
-    async getSpaceRoleBySpaceRoleId(
+    async getSpaceRoleBySpaceRoleId<T extends IOnlySpaceRole>(
         spaceRoleId: number
-    ) {
+    ): Promise<T | null> {
 
         const spaceRole = await this.spaceRoleRepo.findOne({
             where: {
@@ -50,12 +57,12 @@ export class SpaceRepository {
             }
         });
 
-        return spaceRole;
+        return spaceRole as T | null;
     };
 
-    async getSpaceRoleListBySpaceId(
+    async getSpaceRoleListBySpaceId<T extends Array<IOnlySpaceRole>>(
         spaceId: number
-    ){
+    ): Promise<T | []>{
 
         const spaceRoleList = await this.spaceRoleRepo.find({
             where: {
@@ -66,18 +73,18 @@ export class SpaceRepository {
             }
         });
 
-        return spaceRoleList;
+        return spaceRoleList as T | [];
     };
 
 
     /** Space User Role */
 
-    async getSpaceUserRoleByUserId(
+    async getSpaceUserRoleByUserId<T extends Array<IOnlySpaceUserRole>>(
         userId: number,
         skip: number,
         take: number,
         sortCraetedAt: TSortCreatedAt
-    ) {
+    ): Promise<T | []> {
 
         const spaceUserRole = await this.userRoleRepo.find({
             where: {
@@ -91,14 +98,14 @@ export class SpaceRepository {
             take
         });
 
-        return spaceUserRole;
+        return spaceUserRole as T | [];
     }
 
-    async getSpaceUserRoleByIds(
+    async getSpaceUserRoleByIds<T extends ISpaceUserRoleRelationSpaceRole>(
         spaceId: number,
         userId: number,
         spaceRoleId: number
-    ) {
+    ): Promise<T | null>{
 
         const spaceUserRole = await this.userRoleRepo.findOne({
             where: {
@@ -111,13 +118,13 @@ export class SpaceRepository {
             },
         });
 
-        return spaceUserRole;
+        return spaceUserRole as T | null;
     };
 
-    async getSpaceUserRoleForGuard(
+    async getSpaceUserRoleForGuard<T extends IOnlySpaceUserRole>(
         spaceId: number,
         userId: number
-    ) {
+    ): Promise<T | null> {
 
         const userSpaceRelaiton = await this.userRoleRepo.findOne({
             where: {
@@ -126,13 +133,13 @@ export class SpaceRepository {
             }
         });
 
-        return userSpaceRelaiton
+        return userSpaceRelaiton as T | null;
 
     };
 
-    async getSpaceUserRoleBySpaceRoleId(
+    async getSpaceUserRoleBySpaceRoleId<T extends IOnlySpaceUserRole>(
         spaceRoleId: number
-    ){
+    ): Promise<T | null>{
 
         const spaceUserRole = await this.userRoleRepo.findOne({
             where: {
@@ -140,12 +147,12 @@ export class SpaceRepository {
             }
         });
 
-        return spaceUserRole
+        return spaceUserRole as T | null;
     };
 
-    async getSpaceUserRoleListBySpaceId(
+    async getSpaceUserRoleListBySpaceId<T extends IOnlySpaceUserRole>(
         spaceId: number
-    ) {
+    ): Promise<T | []> {
         
         const spaceUserRoleList = await this.userRoleRepo.find({
             where: {
@@ -153,12 +160,12 @@ export class SpaceRepository {
             }
         });
 
-        return spaceUserRoleList;
+        return spaceUserRoleList as T | [];
     }
 
-    async getSpaceRoleCodeByCode(
+    async getSpaceRoleCodeByCode<T extends IOnlySpaceRoleCode>(
         code: string
-    ) {
+    ): Promise<T | null>{
 
         const codeEntity = await this.codeRepo.findOne({
             where: {
@@ -166,12 +173,12 @@ export class SpaceRepository {
             }
         });
 
-        return codeEntity
+        return codeEntity as T | null
     };
 
-    async getSpaceRoleCodeByRoleId(
+    async getSpaceRoleCodeByRoleId<T extends IOnlySpaceRoleCode>(
         spaceRoleId: number
-    ) {
+    ): Promise<T | null> {
 
         const codeEntity = await this.codeRepo.findOne({
             where: {
@@ -179,13 +186,13 @@ export class SpaceRepository {
             }
         });
 
-        return codeEntity
+        return codeEntity as T | null;
     };
 
-    async getUserSpaceRelation(
+    async getUserSpaceRelation<T extends ISpaceUserRoleRelationSpaceAndSpaceRole>(
         spaceId: number,
         userId: number
-    ){
+    ): Promise<T | null> {
         const userSpaceRelaiton = await this.userRoleRepo.findOne({
             where: {
                 spaceId,
@@ -197,13 +204,13 @@ export class SpaceRepository {
             }
         });
 
-        return userSpaceRelaiton
-        
+        return userSpaceRelaiton as T | null;
+
     };
 
-    async getSpaceRelation(
+    async getSpaceRelation<T extends ISpaceRelation>(
         spaceId: number
-    ){
+    ): Promise<T | null>{
 
         const spaceRelation = await this.spaceRepo.findOne({
             where: {
@@ -228,7 +235,7 @@ export class SpaceRepository {
             }
         });
 
-        return spaceRelation
+        return spaceRelation as T | null;
         
     }
 
