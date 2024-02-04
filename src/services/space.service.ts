@@ -27,6 +27,7 @@ import { PatchSpaceLogoDto } from '@dtos/spaces/patch.space.logo.dto';
 import { PatchSpaceRoleDto } from '@dtos/spaces/patch.space.role.dto';
 import { PageQueryDto } from '@dtos/page.query.dto';
 import { CommonUtil } from '@utils/common.util';
+import { DeleteSpaceUserRoleDto } from '@dtos/spaces/delete.space.user.role.dto';
 
 @Injectable()
 export class SpaceService {
@@ -385,6 +386,72 @@ export class SpaceService {
         }
         );
     };
+
+    async deleteSpaceUserRole(
+        user: IUser,
+        body: DeleteSpaceUserRoleDto,
+        param: SpaceParamDto
+    ){
+
+        await this.db.transaction(
+            async(entityManager: EntityManager, args) => {
+
+                const { body, param, user } = args;
+                const { userId } = user;
+                const { spaceId } = param;
+                const { 
+                    spaceUserRoleId: targetSpaceUserRoleId, 
+                    userId : targetUserId
+                } = body;
+                
+                const getUserSpaceRelation = await this.spaceRepo.getUserSpaceRelation(
+                    spaceId,
+                    userId
+                );
+
+                if (getUserSpaceRelation?.spaceRole.spaceForcedExit !== 1) {
+                    throw new CustomException(
+                        "퇴장 권한 없는 관리자",
+                        ECustomExceptionCode["ROLE-004"],
+                        401
+                    )
+                };
+
+                const getTargetUserSpaceRelation = await this.spaceRepo.getUserSpaceRelation(
+                    spaceId,
+                    targetUserId
+                );
+                if(
+                    getTargetUserSpaceRelation?.spaceRole.roleLevel !== 'joiner' &&
+                    getUserSpaceRelation.spaceRole.roleLevel !== 'owner'
+                    ){
+                    throw new CustomException(
+                        "참여자와, 소유자의 관리자 퇴장만 가능",
+                        ECustomExceptionCode["ROLE-004"],
+                        401
+                    )
+                };
+                
+                const deleteSpaceUserRole = await this.spaceRepo.deleteSpaceUserRole(
+                    entityManager,
+                    targetUserId,
+                    targetSpaceUserRoleId
+                );
+                
+                if(deleteSpaceUserRole.affected !== 1){
+                    throw new CustomException(
+                        "유저 강제퇴장 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+
+            }, {
+               body,
+               param,
+               user
+            })
+    }
 
     async deleteSpaceRole(
         param: SpaceRoleParamDto

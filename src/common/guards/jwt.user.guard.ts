@@ -24,7 +24,7 @@ export class JwtUserGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request: Request = await context.switchToHttp().getRequest();
         const response: Response = await context.switchToHttp().getResponse();
-
+        
         const token = this.extractTokenFromHeader(request);
         if (!token) {
             throw new CustomException(

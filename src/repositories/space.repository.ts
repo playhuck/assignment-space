@@ -105,7 +105,10 @@ export class SpaceRepository {
                 spaceId,
                 userId,
                 spaceRoleId
-            }
+            },
+            relations: {
+                spaceRole: true
+            },
         });
 
         return spaceUserRole;
@@ -219,6 +222,7 @@ export class SpaceRepository {
                 },
                 spaceUserRoles: {
                     spaceRoleId: true,
+                    spaceUserRoleId: true,
                     userId: true
                 }
             }
@@ -388,6 +392,20 @@ export class SpaceRepository {
 
         return deleteSpaceRole;
     };
+
+    async deleteSpaceUserRole(
+        entityManager: EntityManager,
+        userId: number,
+        spaceUserRoleId: number
+    ) {
+
+        const deleteSpaceUserRole = await entityManager.softDelete(SpaceUserRole, {
+            userId,
+            spaceUserRoleId
+        });
+
+        return deleteSpaceUserRole;
+    }
 
     async deleteSpace(
         entityManager: EntityManager,

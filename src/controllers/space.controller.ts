@@ -26,6 +26,7 @@ import { SpaceRoleParamDto } from '@dtos/spaces/space.role.param.dto';
 import { IUser } from '@models/interfaces/i.user';
 import { PatchSpaceRoleDto } from '@dtos/spaces/patch.space.role.dto';
 import { PageQueryDto } from '@dtos/page.query.dto';
+import { DeleteSpaceUserRoleDto } from '@dtos/spaces/delete.space.user.role.dto';
 
 @UseGuards(JwtUserGuard)
 @Controller('space')
@@ -121,6 +122,19 @@ export class SpaceController {
     ) {
 
         void await this.service.deleteSpace(user, param);
+    };
+
+    /** 공간 유저 강제 퇴장 */
+    @UseGuards(SpaceRoleGuard)
+    @Delete('/admin/:spaceId/user-role')
+    async deleteSpaceUserRole(
+        @User() user: IUser,
+        @Body() body: DeleteSpaceUserRoleDto,
+        @Param() param: SpaceParamDto
+    ) {
+
+        void await this.service.deleteSpaceUserRole(user, body, param);
+
     };
 
     /** 공간 역할 삭제 */
