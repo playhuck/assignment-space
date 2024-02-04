@@ -29,14 +29,14 @@ import { PageQueryDto } from '@dtos/page.query.dto';
 @Controller('space/:spaceId/post')
 export class PostController {
 
-    constructor(private readonly service: PostService){};
+    constructor(private readonly service: PostService) { };
 
     @Post('/question')
     async postQuestion(
         @User() user: IUser,
         @Param() param: SpaceParamDto,
         @Body() body: PostPostDto
-    ){
+    ) {
 
         const putPresignedUrlList = await this.service.postQuestion(
             user,
@@ -46,13 +46,13 @@ export class PostController {
 
         return { putPresignedUrlList };
     };
-    
+
     @Post('/notice')
     async postNotice(
         @User() user: IUser,
         @Param() param: SpaceParamDto,
         @Body() body: PostPostDto
-    ){
+    ) {
 
         const putPresignedUrlList = await this.service.postNotice(
             user,
@@ -101,8 +101,8 @@ export class PostController {
     async postDelete(
         @UserRelation() userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
         @Param() param: SpacePostParamDto
-    ){
-        
+    ) {
+
         await this.service.postDelete(
             userSpaceRelation,
             param
@@ -114,7 +114,7 @@ export class PostController {
         @UserRelation() userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
         @Param() param: SpaceParamDto,
         @Query() query: PageQueryDto
-    ){
+    ) {
 
         const postList = await this.service.postList(
             userSpaceRelation,
@@ -129,7 +129,7 @@ export class PostController {
     async getPost(
         @UserRelation() userRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
         @Param() param: SpacePostParamDto
-    ){
+    ) {
 
         const post = await this.service.getPost(
             userRelation,

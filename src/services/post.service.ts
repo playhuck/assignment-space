@@ -654,4 +654,22 @@ export class PostService {
                 }));
 
     };
+
+    async postComment(
+        userRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        param: SpacePostParamDto
+    ){
+
+        await this.db.transaction(
+            async(entityManager: EntityManager, args) => {
+
+                const { userRelation, param } = args;
+                const { userId } = userRelation;
+                const { spaceId, postId } = param;
+
+        }, {
+            userRelation,
+            param
+        })
+    }
 }

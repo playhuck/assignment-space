@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '@modules/auth.module';
-import { ChatModule } from '@modules/chat.module';
+import { CommentModule } from '@modules/comment.module';
 import { PostModule } from '@modules/post.module';
 import { SpaceModule } from '@modules/space.module';
 import { UserModule } from '@modules/user.module';
 import { CustomConfigModule } from '@modules/config.module';
 import { CustomTypeOrmModule } from '@modules/typeorm.module';
 import { ProvidersModule } from '@modules/provider.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -15,7 +14,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     CustomTypeOrmModule,
     ProvidersModule,
     AuthModule,
-    ChatModule,
+    CommentModule,
     PostModule,
     SpaceModule,
     UserModule
