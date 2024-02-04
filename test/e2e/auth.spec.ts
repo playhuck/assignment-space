@@ -235,7 +235,8 @@ describe('User Authentication Test', () => {
                 userId: 1,
                 spaces: new Array(),
                 createdAt: ' ',
-                spaceUserRoles: []
+                spaceUserRoles: [],
+                posts: []
             });
 
             try {

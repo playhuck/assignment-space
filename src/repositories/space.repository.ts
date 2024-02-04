@@ -150,7 +150,7 @@ export class SpaceRepository {
         return spaceUserRole as T | null;
     };
 
-    async getSpaceUserRoleListBySpaceId<T extends IOnlySpaceUserRole>(
+    async getSpaceUserRoleListBySpaceId<T extends Array<IOnlySpaceUserRole>>(
         spaceId: number
     ): Promise<T | []> {
         
