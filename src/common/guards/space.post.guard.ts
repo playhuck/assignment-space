@@ -29,7 +29,7 @@ export class SpacePostGuard implements CanActivate {
             spaceId,
             res.user.userId
         );
-
+            
         if (!getUserSpaceRelation) {
             throw new CustomException(
                 "잘못된 요청(공간 참여자가 아님)",

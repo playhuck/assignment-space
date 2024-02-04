@@ -33,6 +33,8 @@ import { PostPostDto } from '@dtos/posts/post.post.dto';
 import { PostSpaceJoinDto } from '@dtos/spaces/post.space.join.dto';
 import { SpacePostParamDto } from '@dtos/posts/space.post.parma.dto';
 import { PatchPostDto } from '@dtos/posts/patch.post.dto';
+import { ISpaceUserRoleRelationSpaceAndSpaceRole } from '@models/interfaces/i.space.return';
+import { Post } from '@entities/post.entity';
 
 jest.mock('@aws-sdk/s3-request-presigner', () => ({
     getSignedUrl: jest.fn(() => {
@@ -682,6 +684,122 @@ describe('Space Test', () => {
             });
             
         })
+
+    });
+
+    describe("게시글 삭제, DELETE /space/:spaceId/", () => {
+
+        let userRelation: ISpaceUserRoleRelationSpaceAndSpaceRole;
+        let param: SpacePostParamDto;
+
+        beforeAll(async () => {
+
+            userRelation = {
+                userId: adminUserId,
+                spaceRole : {
+                    roleLevel: 'admin',
+                    spacePostAdminDelete: 0
+                }
+            } as ISpaceUserRoleRelationSpaceAndSpaceRole;
+
+            param = {
+                spaceId: targetSpaceId,
+                postId: targetNoticePostId
+            };
+
+        });
+
+        describe("질문 삭제", () => {
+
+            it('[공지사항] 삭제 규칙 위반', async() => {
+
+                try {
+
+                    await controller.postDelete(userRelation, param);
+
+                } catch (e) {
+
+                    if(e instanceof CustomException) expect(e['errorCode']).toBe(ECustomExceptionCode['ROLE-006']);
+                    if(e instanceof CustomException) expect(e['statusCode']).toBe(401);
+                    if(e instanceof CustomException) expect(e['message']).toBe('[공지사항]삭제 규칙 위반');
+
+                };
+
+            });
+
+            it('[공지사항] 삭제 규칙 위반', async() => {
+
+                userRelation.userId = 0;
+                userRelation.spaceRole.spacePostAdminDelete = 1;
+                userRelation.spaceRole.roleLevel = 'joiner';
+
+                param.postId = targetQuestionPostId;
+
+                try {
+
+                    await controller.postDelete(userRelation, param);
+
+                } catch (e) {
+
+                    if(e instanceof CustomException) expect(e['errorCode']).toBe(ECustomExceptionCode['ROLE-006']);
+                    if(e instanceof CustomException) expect(e['statusCode']).toBe(401);
+                    if(e instanceof CustomException) expect(e['message']).toBe('[게시물]삭제 규칙 위반');
+
+                };
+                
+            });
+
+            it('시나리오 : 질문 삭제', async() => {
+
+                await req
+                    .delete(`/space/${targetSpaceId}/post/${targetQuestionPostId}`)
+                    .set(`Authorization`, `Bearer ${joinerAccessToken}`)
+                    .query(query)
+                    .then(async() => {
+
+                        const deletedPost = await postRepo.getPostByPostId(targetQuestionPostId);
+                        expect(deletedPost).toBeFalsy();
+
+                        const withDeletedPost = await entityManager.findOne(Post, {
+                            where: {
+                                postId: targetQuestionPostId
+                            },
+                            withDeleted: true
+                        });
+                        expect(withDeletedPost).toBeTruthy();
+
+                        const deletedPostFiles = await postRepo.getPostFileListByPostId(targetQuestionPostId);
+                        expect(deletedPostFiles.length).toBe(0);
+
+                    });
+            });
+
+            it('시나리오 : 공지사항 삭제', async() => {
+
+                await req
+                    .delete(`/space/${targetSpaceId}/post/${targetNoticePostId}`)
+                    .set(`Authorization`, `Bearer ${adminAccessToken}`)
+                    .query(query)
+                    .then(async() => {
+
+                        const deletedPost = await postRepo.getPostByPostId(targetNoticePostId);
+                        expect(deletedPost).toBeFalsy();
+
+                        const withDeletedPost = await entityManager.findOne(Post, {
+                            where: {
+                                postId: targetNoticePostId
+                            },
+                            withDeleted: true
+                        });
+                        expect(withDeletedPost).toBeTruthy();
+
+                        const deletedPostFiles = await postRepo.getPostFileListByPostId(targetNoticePostId);
+                        expect(deletedPostFiles.length).toBe(0);
+
+                    });
+            });
+
+        });
 
     });
 

@@ -19,6 +19,8 @@ import { PostPostDto } from '@dtos/posts/post.post.dto';
 import { SpacePostParamDto } from '@dtos/posts/space.post.parma.dto';
 import { PatchPostDto } from '@dtos/posts/patch.post.dto';
 import { SpacePostGuard } from '@common/guards/space.post.guard';
+import { UserRelation } from '@common/decorators/user.relation.decorator';
+import { ISpaceUserRoleRelationSpaceAndSpaceRole } from '@models/interfaces/i.space.return';
 
 @UseGuards(SpacePostGuard)
 @UseGuards(JwtUserGuard)
@@ -93,8 +95,17 @@ export class PostController {
 
     };
 
-    @Delete('/')
-    async postDelete(){};
+    @Delete('/:postId')
+    async postDelete(
+        @UserRelation() userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        @Param() param: SpacePostParamDto
+    ){
+        
+        await this.service.postDelete(
+            userSpaceRelation,
+            param
+        );
+    };
 
     @Get('/list')
     async postList(){};
