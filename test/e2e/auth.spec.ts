@@ -199,6 +199,9 @@ describe('User Authentication Test', () => {
                         }
                     });
 
+                    console.log("USER:", user);
+                    
+
                     expect(user).toBeTruthy();
 
                     if (user) targetUserId = user?.userId;
@@ -225,44 +228,17 @@ describe('User Authentication Test', () => {
 
         });
 
-        it('중복로그인', async () => {
+        it('비밀번호 불일치', async () => {
 
-            const dto = userDto.signUp();
             const getAuthentificDataSpyOn = jest.spyOn(UserRepository.prototype, 'getAuthentificData').mockResolvedValue({
-                ...dto,
-                refreshToken: ' ',
-                profileImage: ' ',
-                userId: 1,
-                spaces: new Array(),
-                createdAt: ' ',
-                spaceUserRoles: [],
-                posts: []
+                password: 'aa'
             });
 
             try {
 
-                await controller.signIn({} as PostSignInDto);
-
-            } catch (e) {
-
-                if (e instanceof CustomException) expect(e['errorCode']).toBe(ECustomExceptionCode['USER-003']);
-                if (e instanceof CustomException) expect(e['statusCode']).toBe(401);
-
-            };
-
-            expect(getAuthentificDataSpyOn).toHaveBeenCalledTimes(1);
-
-        })
-
-        it('비밀번호 불일치', async () => {
-
-            const getAuthentificDataSpyOn = jest.spyOn(UserRepository.prototype, 'getAuthentificData').mockResolvedValue(new User());
-
-            try {
-
                 await controller.signIn({
-                    email: ' ',
-                    password: ' '
+                    email: targetEmail,
+                    password: 'x'
                 } as PostSignInDto);
 
             } catch (e) {

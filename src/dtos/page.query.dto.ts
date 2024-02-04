@@ -10,5 +10,5 @@ export class PageQueryDto {
     pageCount!: number;
 
     @IsNotEmptyString()
-    sortCraetedAt!: TSortCreatedAt
+    sortCreated!: TSortCreatedAt
 }

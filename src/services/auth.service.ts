@@ -95,14 +95,6 @@ export class AuthService {
                     );
                 };
                 
-                if (getAuthentificData?.refreshToken) {
-                    throw new CustomException(
-                        "중복 로그인은 허용되지 않습니다.",
-                        ECustomExceptionCode["USER-003"],
-                        401
-                    )
-                };
-
                 const compared = await this.bcrypt.comparedPassword(
                     password,
                     getAuthentificData.password

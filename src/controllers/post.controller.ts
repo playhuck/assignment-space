@@ -6,6 +6,7 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     UseGuards
 } from '@nestjs/common';
 
@@ -21,6 +22,7 @@ import { PatchPostDto } from '@dtos/posts/patch.post.dto';
 import { SpacePostGuard } from '@common/guards/space.post.guard';
 import { UserRelation } from '@common/decorators/user.relation.decorator';
 import { ISpaceUserRoleRelationSpaceAndSpaceRole } from '@models/interfaces/i.space.return';
+import { PageQueryDto } from '@dtos/page.query.dto';
 
 @UseGuards(SpacePostGuard)
 @UseGuards(JwtUserGuard)
@@ -108,9 +110,33 @@ export class PostController {
     };
 
     @Get('/list')
-    async postList(){};
+    async postList(
+        @UserRelation() userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        @Param() param: SpaceParamDto,
+        @Query() query: PageQueryDto
+    ){
+
+        const postList = await this.service.postList(
+            userSpaceRelation,
+            param,
+            query
+        );
+
+        return { postList };
+    };
 
     @Get('/:postId')
-    async getPost(){};
+    async getPost(
+        @UserRelation() userRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        @Param() param: SpacePostParamDto
+    ){
+
+        const post = await this.service.getPost(
+            userRelation,
+            param
+        );
+
+        return { post };
+    };
 
 }

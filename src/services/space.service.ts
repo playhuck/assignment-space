@@ -535,7 +535,7 @@ export class SpaceService {
     ) {
 
         const { userId } = user;
-        const { page, pageCount : take, sortCraetedAt } = query;
+        const { page, pageCount : take, sortCreated } = query;
 
         const skip = this.util.skipedItem(page, take);
 
@@ -543,7 +543,7 @@ export class SpaceService {
             userId,
             skip,
             take,
-            sortCraetedAt
+            sortCreated
             );
 
         const getMySpaceList = await Promise.all(

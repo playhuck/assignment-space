@@ -29,6 +29,22 @@ export class PostRepository {
         return post;
     };
 
+    async getPostRelationByPostId(
+        postId: number
+    ){
+
+        const post = await this.postRepo.findOne({
+            where: {
+                postId
+            },
+            relations: [
+                'postFiles'
+            ]
+        });
+
+        return post;
+    };
+
     async getPostListBySpaceId(
         spaceId: number,
         skip: number,
@@ -41,6 +57,7 @@ export class PostRepository {
                 spaceId
             },
             order: {
+                postCategory: 'ASC',
                 createdAt: sortedCreatedAt
             },
             take,

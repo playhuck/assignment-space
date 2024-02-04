@@ -78,9 +78,9 @@ describe('Space Test', () => {
     const query = {
         isTest: true
     };
-    const ownerUserId = 4;
-    const adminUserId = 5;
-    const joinerUserId = 6;
+    const ownerUserId = 5;
+    const adminUserId = 6;
+    const joinerUserId = 7;
     let ownerAccessToken: string;
     let adminAccessToken: string;
     let joinerAccessToken: string;
@@ -169,6 +169,7 @@ describe('Space Test', () => {
         expect(service['dayjs']).toBeDefined();
         expect(service['db']).toBeDefined();
         expect(service['s3']).toBeDefined();
+        expect(service['util']).toBeDefined();
         expect(service['spaceRepo']).toBeDefined();
         expect(service['postRepo']).toBeDefined();
 

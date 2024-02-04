@@ -4,6 +4,7 @@ import { Repository, DataSource, EntityManager } from "typeorm";
 import { User } from "@entities/user.entity";
 import { PostSignUpDto } from "@dtos/auths/post.sign.up.dto";
 import { InjectRepository } from "@nestjs/typeorm";
+import { IUser } from "@models/interfaces/i.user";
 
 @Injectable()
 export class UserRepository {
@@ -15,7 +16,7 @@ export class UserRepository {
 
     async getUserById(
         userId: number
-    ){
+    ): Promise<IUser | null> {
 
         const user = await this.userRepo.findOne({
             where: {
@@ -35,17 +36,16 @@ export class UserRepository {
 
     async getAuthentificData(email: string) {
 
-        const user = await this.userRepo.findOne({
-            where: {
-                email
-            },
-            select: {
-                email: true,
-                password: true,
-                userId: true,
-                refreshToken: true
-            }
-        });
+        const user = await this.userRepo
+            .createQueryBuilder()
+            .select([
+                'user_id as userId',
+                'email',
+                'password',
+                'refresh_token as refreshToken'
+            ]).
+            where(`email =:email`, { email })
+            .getRawOne();
 
         return user;
     };
@@ -54,7 +54,7 @@ export class UserRepository {
         entityManager: EntityManager,
         body: PostSignUpDto,
         hashedPassword: string
-        ) {
+    ) {
 
         const {
             email,
@@ -77,7 +77,7 @@ export class UserRepository {
         entityManager: EntityManager,
         userId: number,
         refreshToken: string
-    ){
+    ) {
 
         const update = await entityManager.update(User, {
             userId
@@ -91,7 +91,7 @@ export class UserRepository {
     async clearUserRefresh(
         entityManager: EntityManager,
         userId: number
-    ){
+    ) {
         const update = await entityManager.update(User, {
             userId
         }, {

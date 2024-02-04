@@ -13,6 +13,8 @@ import {
     ECustomExceptionCode
 } from '@models/enums/e.exception.code';
 import { UserRepository } from '@repositories/user.repository';
+import { User } from '@entities/user.entity';
+import { IUser } from '@models/interfaces/i.user';
 
 @Injectable()
 export class JwtUserGuard implements CanActivate {
@@ -52,9 +54,7 @@ export class JwtUserGuard implements CanActivate {
             )
         };
 
-        const { password, spaces, spaceUserRoles, ...data } = user;
-
-        response["user"] = data;
+        response["user"] = user as IUser;
 
         return true;
     };

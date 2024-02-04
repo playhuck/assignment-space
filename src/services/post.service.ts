@@ -1,8 +1,10 @@
 import { CustomException } from '@common/exception/custom.exception';
+import { PageQueryDto } from '@dtos/page.query.dto';
 import { PatchPostDto } from '@dtos/posts/patch.post.dto';
 import { PostPostDto } from '@dtos/posts/post.post.dto';
 import { SpacePostParamDto } from '@dtos/posts/space.post.parma.dto';
 import { SpaceParamDto } from '@dtos/spaces/space.param.dto';
+import { Post } from '@entities/post.entity';
 import { ECustomExceptionCode } from '@models/enums/e.exception.code';
 import { IPostFileList } from '@models/interfaces/i.post';
 import { ISpaceUserRoleRelationSpaceAndSpaceRole } from '@models/interfaces/i.space.return';
@@ -12,6 +14,8 @@ import { DayjsProvider } from '@providers/dayjs.provider';
 import { S3Provider } from '@providers/s3.provider';
 import { PostRepository } from '@repositories/post.repository';
 import { SpaceRepository } from '@repositories/space.repository';
+import { UserRepository } from '@repositories/user.repository';
+import { CommonUtil } from '@utils/common.util';
 import { DbUtil } from '@utils/db.util';
 import { EntityManager } from 'typeorm';
 
@@ -20,13 +24,15 @@ export class PostService {
 
     constructor(
         private readonly db: DbUtil,
+        private readonly util: CommonUtil,
 
         private readonly dayjs: DayjsProvider,
         private readonly s3: S3Provider,
 
         private readonly spaceRepo: SpaceRepository,
-        private readonly postRepo: PostRepository
-    ){};
+        private readonly postRepo: PostRepository,
+        private readonly userRepo: UserRepository
+    ) { };
 
     async postQuestion(
         user: IUser,
@@ -49,7 +55,7 @@ export class PostService {
                 } = body;
                 const createdAt = this.dayjs.getDatetimeByOptions('YYYY-MM-DD HH:mm:ss');
 
-                if(postCategory === 'notice'){
+                if (postCategory === 'notice') {
                     throw new CustomException(
                         "잘못된 게시글 카테고리",
                         ECustomExceptionCode["POST-002"],
@@ -221,7 +227,7 @@ export class PostService {
         return putPresignedUrlList;
 
     };
-    
+
     async updateQuestion(
         user: IUser,
         param: SpacePostParamDto,
@@ -412,7 +418,7 @@ export class PostService {
         return putPresignedUrlList
 
     };
-    
+
     async postDelete(
         userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
         param: SpacePostParamDto
@@ -481,9 +487,127 @@ export class PostService {
         })
     };
 
-    async postList(){};
+    async postList(
+        userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        param: SpaceParamDto,
+        query: PageQueryDto
+    ): Promise<
+        Array<Pick<
+            Post, 'createdAt' | 'isAnonymous' | 'postId' | 'postName' | 'userId' | 'postCategory'>>
+    > {
 
-    async getPost(){};
+        const { spaceId } = param;
+        const { spaceRole } = userSpaceRelation;
+        const { roleLevel } = spaceRole;
+        const {
+            page,
+            pageCount: take,
+            sortCreated
+        } = query;
+
+        const skip = this.util.skipedItem(page, take);
+
+        const postList = await this.postRepo.getPostListBySpaceId(
+            spaceId,
+            skip,
+            take,
+            sortCreated
+        );
+
+        return await Promise.all(postList.map(async (post, i) => {
+
+            const { isAnonymous, postName, postId, createdAt, postCategory } = post;
+
+            const userId = isAnonymous && roleLevel === 'joiner' ? 0 : post.userId;
+            return {
+                isAnonymous,
+                postName,
+                postCategory,
+                postId,
+                userId: post.userId === userSpaceRelation.userId ? post.userId : userId,
+                createdAt: this.dayjs.getDatetimeWithOffset(createdAt, 'YYYY-MM-DD HH:mm', {
+                    value: -540,
+                    unit: 'minute'
+                })
+            }
+        }));
+
+    };
+
+    async getPost(
+        userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        param: SpacePostParamDto
+    ) {
+
+        const { spaceId, postId } = param;
+        const { userId, spaceRole } = userSpaceRelation;
+        const { roleLevel } = spaceRole;
+
+        const post = await this.postRepo.getPostRelationByPostId(postId);
+        if (!post) {
+            throw new CustomException(
+                "게시글을 찾을 수 없습니다.",
+                ECustomExceptionCode["POST-001"],
+                403
+            )
+        };
+        const {
+            postName,
+            postCategory,
+            postContents,
+            postFiles,
+            isAnonymous
+        } = post;
+
+        const postFileList = postFiles.length > 0 ? await Promise.all(postFiles.map(async (file, i) => {
+
+            const { postFileName } = file;
+
+            return {
+                getPresignedUrl: await this.s3.getPresignedUrl(`${userId}/${spaceId}/${postId}/${postFileName}`),
+                idx: i + 1
+            }
+        })) : [];
+
+        const user = await this.userRepo.getUserById(userId);
+        if (!user) {
+            throw new CustomException(
+                "존재하지 않는 회원",
+                ECustomExceptionCode['USER-001'],
+                403
+            )
+        };
+        const { email, firstName, lastName, profileImage } = user;
+
+        let showUser = true;
+        if (isAnonymous) {
+
+            if (post.userId !== userId && roleLevel === 'joiner') {
+                showUser = false;
+            }
+        };
+
+        const userImage = profileImage ? 
+            await this.s3.getPresignedUrl(`${userId}/${spaceId}/${profileImage}`) : 
+            await this.s3.getPresignedUrl(`defaultImage.png`)
+
+        return {
+            postName,
+            postCategory,
+            postContents,
+            postId,
+            postFiles: postFileList,
+            userId: showUser ? post.userId : 0,
+            name: showUser ? lastName + firstName : '',
+            email: showUser ? email : '',
+            profileImage: showUser ?
+                userImage :
+                await this.s3.getPresignedUrl(`defaultImage.png`)
+        };
+
+
+
+    };
 
     private async postUploadFileList(
         entityManager: EntityManager,
