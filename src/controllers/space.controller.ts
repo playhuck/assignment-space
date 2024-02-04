@@ -6,6 +6,7 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     UseGuards
 } from '@nestjs/common';
 
@@ -24,6 +25,7 @@ import { SpaceRoleParamDto } from '@dtos/spaces/space.role.param.dto';
 
 import { IUser } from '@models/interfaces/i.user';
 import { PatchSpaceRoleDto } from '@dtos/spaces/patch.space.role.dto';
+import { PageQueryDto } from '@dtos/page.query.dto';
 
 @UseGuards(JwtUserGuard)
 @Controller('space')
@@ -145,10 +147,11 @@ export class SpaceController {
 
     @Get('/:userId/list')
     async getMySpaceList(
-        @User() user: IUser
+        @User() user: IUser,
+        @Query() query: PageQueryDto
     ) {
 
-        const getMySpaceList = await this.service.getMySpaceList(user);
+        const getMySpaceList = await this.service.getMySpaceList(user, query);
 
         return { getMySpaceList };
     };

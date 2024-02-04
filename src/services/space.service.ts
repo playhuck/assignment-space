@@ -25,12 +25,15 @@ import { SpaceRoleParamDto } from '@dtos/spaces/space.role.param.dto';
 import { PatchSpaceNameDto } from '@dtos/spaces/patch.space.name.dto';
 import { PatchSpaceLogoDto } from '@dtos/spaces/patch.space.logo.dto';
 import { PatchSpaceRoleDto } from '@dtos/spaces/patch.space.role.dto';
+import { PageQueryDto } from '@dtos/page.query.dto';
+import { CommonUtil } from '@utils/common.util';
 
 @Injectable()
 export class SpaceService {
 
     constructor(
         private readonly db: DbUtil,
+        private readonly util: CommonUtil,
 
         private readonly dayjs: DayjsProvider,
         private readonly random: RandomProvider,
@@ -460,12 +463,21 @@ export class SpaceService {
     };
 
     async getMySpaceList(
-        user: IUser
+        user: IUser,
+        query: PageQueryDto
     ) {
 
         const { userId } = user;
+        const { page, pageCount : take, sortCraetedAt } = query;
 
-        const getMyUserRoleList = await this.spaceRepo.getSpaceUserRoleByUserId(userId);
+        const skip = this.util.skipedItem(page, take);
+
+        const getMyUserRoleList = await this.spaceRepo.getSpaceUserRoleByUserId(
+            userId,
+            skip,
+            take,
+            sortCraetedAt
+            );
 
         const getMySpaceList = await Promise.all(
             getMyUserRoleList.map(async (userRole, i) => {

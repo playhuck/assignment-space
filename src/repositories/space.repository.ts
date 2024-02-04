@@ -12,6 +12,7 @@ import { SpaceUserRole } from "@entities/space.user.role.entity";
 import { OWNER, NOT_OWNER_ROLE } from "@common/constants/role.constant";
 import { IUser } from "@models/interfaces/i.user";
 import { SpaceRoleCode } from "@entities/space.role.code.entity";
+import { TSortCreatedAt } from "@models/types/t.common";
 
 @Injectable()
 export class SpaceRepository {
@@ -72,7 +73,10 @@ export class SpaceRepository {
     /** Space User Role */
 
     async getSpaceUserRoleByUserId(
-        userId: number
+        userId: number,
+        skip: number,
+        take: number,
+        sortCraetedAt: TSortCreatedAt
     ) {
 
         const spaceUserRole = await this.userRoleRepo.find({
@@ -80,8 +84,11 @@ export class SpaceRepository {
                 userId
             },
             order: {
+                createdAt: sortCraetedAt,
                 spaceUserRoleId: 'DESC'
-            }
+            },
+            skip,
+            take
         });
 
         return spaceUserRole;

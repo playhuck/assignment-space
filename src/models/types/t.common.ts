@@ -1,4 +1,12 @@
 
-export type TFileExtension = 'image' | 'file';
+type TFileExtension = 'image' | 'file';
 
-export type TDomainPath = 'owner' | 'admin';
+type TDomainPath = 'owner' | 'admin';
+
+type TSortCreatedAt = 'ASC' | 'DESC';
+
+export {
+    TDomainPath,
+    TFileExtension,
+    TSortCreatedAt
+}
