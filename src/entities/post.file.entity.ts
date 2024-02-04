@@ -16,14 +16,14 @@ export class PostFile extends CustomBaseEntity {
         name: 'post_file_id',
         type: 'int'
     })
-    post_file_Id!: number;
+    postFileId!: number;
 
     @Column({
         name: 'post_id',
         type: 'int',
         nullable: false
     })
-    post_id!: number;
+    postId!: number;
 
     @Column({
         name: 'post_name',

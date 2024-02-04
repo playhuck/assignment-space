@@ -9,11 +9,15 @@ export enum ECustomExceptionCode {
   /** 공간을 찾을 수 없습니다. */ 'SPACE-001' = 'SPACE-001',
   /** 유효하지 않은 코드 */ 'SPACE-002' = 'SPACE-002',
 
+  /** 게시글을 찾을 수 없음 */ 'POST-001' = 'POST-001',
+  /** 게시글 카테고리 오류 */ 'POST-002' = 'POST-002',
+
   /** 소유자만 이용할 수 있습니다. */ 'ROLE-001' = 'ROLE-001',
   /** 누군가 사용중인 역할[삭제불가]. */ 'ROLE-002' = 'ROLE-002',
   /** 관리자 이상만 이용할 수 있습니다. */ 'ROLE-003' = 'ROLE-003',
   /** 강제퇴장 시킬 수 없는 경우 */ 'ROLE-004' = 'ROLE-004',
-  /** 참여자만 익명으로 작성할 수 있음 */ 'ROLE-005' = 'ROLE-005',
+  /** 익명 작성 규칙 위반 */ 'ROLE-005' = 'ROLE-005',
+  /** 공지사항 작성 권한 없음 */ 'ROLE-006' = 'ROLE-006',
 
   /** 비밀번호 불일치 */ 'INCORECT-PWD' = 'INCORECT-PWD',
   /** DB 비밀번호 불일치 */ 'INCORECT-DB-PWD' = 'INCORECT-DB-PWD',

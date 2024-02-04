@@ -149,6 +149,7 @@ export class SpaceController {
         )
     };
 
+    /** 특정 공간 정보 */
     @Get('/:spaceId')
     async getSpace(
         @Param() param: SpaceParamDto
@@ -159,6 +160,7 @@ export class SpaceController {
         return { space };
     };
 
+    /** 나의 전체 공간 참여 리스트 */
     @Get('/:userId/list')
     async getMySpaceList(
         @User() user: IUser,

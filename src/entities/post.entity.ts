@@ -11,6 +11,7 @@ import { User } from './user.entity';
 import { CustomBaseEntity } from './base.entity';
 import { Space } from './space.entity';
 import { PostFile } from './post.file.entity';
+import { TPostCategory } from '@models/types/t.post';
 
 @Entity('post')
 export class Post extends CustomBaseEntity {
@@ -50,6 +51,20 @@ export class Post extends CustomBaseEntity {
         nullable: false
     })
     postContents!: string;
+
+    @Column({
+        name: 'post_category',
+        type: 'varchar',
+        length: 30,
+        nullable: false
+    })
+    postCategory!: TPostCategory;
+
+    @Column({
+        name: 'is_anonymous',
+        type: 'tinyint'
+    })
+    isAnonymous!: number; 
 
     @ManyToOne(() => User, user => user.posts)
     @JoinColumn({ name: 'user_id' })

@@ -6,15 +6,10 @@ import {
 } from "@common/decorators/cv.not.empty.decorator";
 import { Post } from "@entities/post.entity";
 import { IPostFileList } from "@models/interfaces/i.post";
+import { TPostCategory } from "@models/types/t.post";
 
 export class PostPostDto 
-    implements Pick<Post, 'postName' | 'postContents'>{
-
-    @IsNotEmptyNumber()
-    userId!: number;
-
-    @IsNotEmptyNumber()
-    spaceId!: number;
+    implements Pick<Post, 'postName' | 'postContents' | 'postCategory'>{
 
     @IsNotEmptyString()
     postName!: string;
@@ -27,5 +22,8 @@ export class PostPostDto
 
     @IsNotEmptyBoolean()
     isAnonymous!: boolean;
+
+    @IsNotEmptyString()
+    postCategory!: TPostCategory;
 
 };

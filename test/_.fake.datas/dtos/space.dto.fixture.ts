@@ -61,6 +61,28 @@ export class SpaceDtoFixture {
         }
     };
 
+    public async postSpaceQuestion(
+        spaceName: string
+    ) {
+
+        const array = new Array(2).fill(0);
+
+        const list = await Promise.all(array.map(async (val, i) => {
+
+            if (i === 1) return await this.postSpaceRoleList('joiner', 'joiner');
+            if (i === 0) return await this.postSpaceRoleList('admin', 'admin')
+        }));
+
+        return {
+            spaceLogo: faker.datatype.string(5),
+            spaceLogoExtension: 'file2',
+            spaceName,
+            spaceOwnerRoleName: 'head2',
+            roleList: list
+        }
+
+    };
+
     public async postSpaceJoin(){
         return faker.datatype.string(8);
     }
