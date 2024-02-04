@@ -4,6 +4,7 @@ import { CustomBaseEntity } from './base.entity';
 import { SpaceRole } from './space.role.entity';
 import { SpaceUserRole } from './space.user.role.entity';
 import { SpaceRoleCode } from './space.role.code.entity';
+import { Post } from './post.entity';
 
 @Entity('space')
 export class Space extends CustomBaseEntity {
@@ -56,5 +57,11 @@ export class Space extends CustomBaseEntity {
         cascade: true
     })
     spaceRoleCodes!: SpaceRoleCode[];
+
+    @OneToMany(() => Post, (post) => post.user, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    posts!: Post[];
 
 }
