@@ -12,6 +12,7 @@ import { CustomBaseEntity } from './base.entity';
 import { Space } from './space.entity';
 import { PostFile } from './post.file.entity';
 import { TPostCategory } from '@models/types/t.post';
+import { PostComment } from './post.comment.entity';
 
 @Entity('post')
 export class Post extends CustomBaseEntity {
@@ -69,7 +70,7 @@ export class Post extends CustomBaseEntity {
     @Column({
         name: 'updated_at',
         type: 'varchar',
-        length: 255 
+        length: 255
     })
     updatedAt?: string;
 
@@ -86,5 +87,11 @@ export class Post extends CustomBaseEntity {
         cascade: true
     })
     postFiles!: PostFile[];
+
+    @OneToMany(() => PostComment, (comment) => comment.post, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    postComments!: PostComment[];
 
 };

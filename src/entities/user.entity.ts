@@ -11,6 +11,7 @@ import { CustomBaseEntity } from './base.entity';
 import { SpaceRole } from './space.role.entity';
 import { SpaceUserRole } from './space.user.role.entity';
 import { Post } from './post.entity';
+import { PostComment } from './post.comment.entity';
 
 @Entity('user')
 @Unique(['email'])
@@ -83,4 +84,10 @@ export class User extends CustomBaseEntity {
         cascade: true
     })
     posts!: Post[];
+
+    @OneToMany(() => PostComment, (comment) => comment.user, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    postComments!: PostComment[];
 }
