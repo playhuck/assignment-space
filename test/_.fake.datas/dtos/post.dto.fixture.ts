@@ -8,6 +8,7 @@ import { PostFile } from "@entities/post.file.entity";
 import { IPostFileList } from "@models/interfaces/i.post";
 import { PostPostDto } from "@dtos/posts/post.post.dto";
 import { TPostCategory } from "@models/types/t.post";
+import { PatchPostDto } from "@dtos/posts/patch.post.dto";
 
 export class PostDtoFixture {
 
@@ -21,14 +22,28 @@ export class PostDtoFixture {
             postContents: this.generatePostContents,
             postName,
             postFileList: [
-                await this.file(1)
+                 this.file(1)
             ],
             isAnonymous,
             postCategory
         }
     };
 
-    public async file(fileId: number): Promise<IPostFileList>{
+    public async patchDto(
+        postName: string,
+        isAnonymous: boolean
+    ): Promise<PatchPostDto> {
+        return {
+            postContents: this.generatePostContents,
+            postName,
+            postFileList: [
+                 this.file(1)
+            ],
+            isAnonymous
+        }
+    }
+
+    private file(fileId: number): IPostFileList {
 
         return {
             fileExtension: 'image',

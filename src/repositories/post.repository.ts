@@ -16,6 +16,19 @@ export class PostRepository {
     ) {
     };
 
+    async getPostByPostId(
+        postId: number
+    ){
+
+        const post = await this.postRepo.findOne({
+            where: {
+                postId
+            }
+        });
+
+        return post;
+    };
+
     async getPostListBySpaceId(
         spaceId: number,
         skip: number,
@@ -48,7 +61,7 @@ export class PostRepository {
         });
 
         return postFiles;
-    }
+    };
 
     async insertPostQuestion(
         entityManager: EntityManager,
@@ -91,5 +104,57 @@ export class PostRepository {
 
         return insertPostFile;
     };
+
+    async updatePost(
+        entityManager: EntityManager,
+        postId: number,
+        postName: string,
+        postContents: string,
+        updatedAt: string,
+        isAnonymous: boolean
+    ){
+
+        const updatePost = await entityManager.update(Post, {
+            postId
+        }, {
+            postName,
+            postContents,
+            updatedAt,
+            isAnonymous: isAnonymous ? 1 : 0
+        });
+
+        return updatePost;
+    };
+
+    async deletePostFiles(
+        entityManager: EntityManager,
+        postId: number
+    ){
+
+        const deletePostFiles = await entityManager.softDelete(PostFile, {
+            postId
+        });
+
+        return deletePostFiles;
+    };
+
+    async deletePost(
+        entityManager: EntityManager,
+        postId: number
+    ){
+
+        const deletePostRelation = await entityManager.findOne(Post, {
+            where: {
+                postId
+            },
+            relations: [
+                'postFiles'
+            ]
+        });
+
+        const deletePost = await entityManager.softRemove(Post, deletePostRelation!);
+        
+        return deletePost;
+    }
 
 }

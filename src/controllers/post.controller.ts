@@ -16,7 +16,11 @@ import { User } from '@common/decorators/user.decorator';
 import { IUser } from '@models/interfaces/i.user';
 import { SpaceParamDto } from '@dtos/spaces/space.param.dto';
 import { PostPostDto } from '@dtos/posts/post.post.dto';
+import { SpacePostParamDto } from '@dtos/posts/space.post.parma.dto';
+import { PatchPostDto } from '@dtos/posts/patch.post.dto';
+import { SpacePostGuard } from '@common/guards/space.post.guard';
 
+@UseGuards(SpacePostGuard)
 @UseGuards(JwtUserGuard)
 @Controller('space/:spaceId/post')
 export class PostController {
@@ -38,7 +42,7 @@ export class PostController {
 
         return { putPresignedUrlList };
     };
-
+    
     @Post('/notice')
     async postNotice(
         @User() user: IUser,
@@ -55,8 +59,39 @@ export class PostController {
         return { putPresignedUrlList };
     };
 
-    @Patch('/')
-    async postUpdate(){};
+    @Patch('/:postId/question')
+    async updateQuestion(
+        @User() user: IUser,
+        @Param() param: SpacePostParamDto,
+        @Body() body: PatchPostDto
+    ) {
+
+        const putPresignedUrlList = await this.service.updateQuestion(
+            user,
+            param,
+            body
+        );
+
+        return { putPresignedUrlList };
+
+    };
+
+    @Patch('/:postId/notice')
+    async updateNotice(
+        @User() user: IUser,
+        @Param() param: SpacePostParamDto,
+        @Body() body: PatchPostDto
+    ) {
+
+        const putPresignedUrlList = await this.service.updateNotice(
+            user,
+            param,
+            body
+        );
+
+        return { putPresignedUrlList };
+
+    };
 
     @Delete('/')
     async postDelete(){};

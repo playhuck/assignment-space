@@ -28,6 +28,14 @@ export class SpaceRoleGuard implements CanActivate {
         const spaceId: number = query?.isTest ?
             +req.path.split('/')[3] :
             +req.path.split('/')[4];
+
+        if(typeof rolePath !== 'string' || typeof spaceId !== 'number'){
+            throw new CustomException(
+                "도메인 규칙을 지켜서 기능을 작성",
+                ECustomExceptionCode["INTERVAL-SERVER-ERROR"],
+                500
+            )
+        };
             
         const isSpaceUser = await this.spaceRepo.getSpaceUserRoleForGuard(
             spaceId,

@@ -17,7 +17,8 @@ export enum ECustomExceptionCode {
   /** 관리자 이상만 이용할 수 있습니다. */ 'ROLE-003' = 'ROLE-003',
   /** 강제퇴장 시킬 수 없는 경우 */ 'ROLE-004' = 'ROLE-004',
   /** 익명 작성 규칙 위반 */ 'ROLE-005' = 'ROLE-005',
-  /** 공지사항 작성 권한 없음 */ 'ROLE-006' = 'ROLE-006',
+  /** 공지사항 작성 규칙 위반 */ 'ROLE-006' = 'ROLE-006',
+  /** [게시물 포함]삭제 규칙 위반 */ 'ROLE-007' = 'ROLE-007',
 
   /** 비밀번호 불일치 */ 'INCORECT-PWD' = 'INCORECT-PWD',
   /** DB 비밀번호 불일치 */ 'INCORECT-DB-PWD' = 'INCORECT-DB-PWD',

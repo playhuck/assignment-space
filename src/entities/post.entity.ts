@@ -64,7 +64,14 @@ export class Post extends CustomBaseEntity {
         name: 'is_anonymous',
         type: 'tinyint'
     })
-    isAnonymous!: number; 
+    isAnonymous!: number;
+
+    @Column({
+        name: 'updated_at',
+        type: 'varchar',
+        length: 255 
+    })
+    updatedAt?: string;
 
     @ManyToOne(() => User, user => user.posts)
     @JoinColumn({ name: 'user_id' })

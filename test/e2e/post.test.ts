@@ -31,6 +31,8 @@ import { IUser } from '@models/interfaces/i.user';
 import { SpaceParamDto } from '@dtos/spaces/space.param.dto';
 import { PostPostDto } from '@dtos/posts/post.post.dto';
 import { PostSpaceJoinDto } from '@dtos/spaces/post.space.join.dto';
+import { SpacePostParamDto } from '@dtos/posts/space.post.parma.dto';
+import { PatchPostDto } from '@dtos/posts/patch.post.dto';
 
 jest.mock('@aws-sdk/s3-request-presigner', () => ({
     getSignedUrl: jest.fn(() => {
@@ -84,6 +86,9 @@ describe('Space Test', () => {
     let targetSpaceId: number;
     let targetAdminCode: string;
     let targetJoinerCode: string;
+
+    let targetQuestionPostId: number;
+    let targetNoticePostId: number;
 
     let currTime: string;
 
@@ -342,6 +347,7 @@ describe('Space Test', () => {
                     .post(`/space/${targetSpaceId}/post/question`)
                     .set('Authorization', `Bearer ${joinerAccessToken}`)
                     .send(body)
+                    .query(query)
                     .then(async(res) => {
 
                         const { body } : {
@@ -370,6 +376,8 @@ describe('Space Test', () => {
                         const postFileList = await postRepo.getPostFileListByPostId(postlist[0].postId);
 
                         expect(postFileList.length).toBe(1);
+
+                        targetQuestionPostId = postlist[0].postId;
                     });
             });
 
@@ -474,6 +482,7 @@ describe('Space Test', () => {
                 await req
                     .post(`/space/${targetSpaceId}/post/notice`)
                     .set('Authorization', `Bearer ${adminAccessToken}`)
+                    .query(query)
                     .send(body)
                     .then(async(res) => {
 
@@ -506,11 +515,173 @@ describe('Space Test', () => {
 
                         expect(createdAtSpyOn).toHaveBeenCalledTimes(2);
                         createdAtSpyOn.mockRestore();
+
+                        targetNoticePostId = postlist[0].postId;
                     });
             });
 
 
         });
+
+    });
+
+    describe("게시글 수정", () => {
+
+        let user: IUser;
+        let param: SpacePostParamDto;
+        let body: PatchPostDto;
+
+        beforeAll(async () => {
+
+            user = {
+                userId: adminUserId,
+                email: ' ',
+                firstName: ' ',
+                lastName: ' ',
+                createdAt: ' ',
+                profileImage: ' '
+            };
+
+            param = {
+                spaceId: targetSpaceId,
+                postId: targetQuestionPostId
+            };
+
+            body = await postDto.patchDto(
+                'POST_TEST_QUESTION_UPDATE',
+                true
+            );
+        });
+
+        describe("질문 수정, PATCH /space/:spaceId/:postId/question", () => {
+
+            it('익명 작성 규칙 위반', async () => {
+
+                try {
+
+                    await controller.updateQuestion(
+                        user,
+                        param,
+                        body
+                    );
+
+                } catch (e) {
+
+                    if(e instanceof CustomException) expect(e['errorCode']).toBe(ECustomExceptionCode['ROLE-005']);
+                    if(e instanceof CustomException) expect(e['statusCode']).toBe(401);
+                }
+            });
+
+            it('시나리오 : 질문 수정', async () => {
+
+                body.isAnonymous = false;
+
+                await req
+                    .patch(`/space/${targetSpaceId}/post/${targetQuestionPostId}/question`)
+                    .set('Authorization', `Bearer ${joinerAccessToken}`)
+                    .send(body)
+                    .query(query)
+                    .then(async(res) => {
+
+                        const { body } : {
+                            body : {
+                                putPresignedUrlList: {
+                                    idx: number,
+                                    putPresignedUrl: string;
+                                }[]
+                            }
+                        }= res;
+
+                        expect(body?.putPresignedUrlList[0].putPresignedUrl).toBe('hello');
+                        expect(body?.putPresignedUrlList.length).toBe(1);
+
+                        const post = await postRepo.getPostByPostId(targetQuestionPostId);
+
+                        expect(post?.isAnonymous).toBe(0);
+                        expect(post?.postName).toBe('POST_TEST_QUESTION_UPDATE');
+
+                    })
+            });
+
+        });
+
+        describe("공지 수정, PATCH /space/:spaceId/:postId/notice", () => {
+
+            it('익명 작성 규칙 위반', async() => {
+
+                body.isAnonymous = true;
+
+                try {
+
+                    await controller.updateNotice(
+                        user,
+                        param,
+                        body
+                    );
+    
+                } catch (e) {
+    
+                    if(e instanceof CustomException) expect(e['errorCode']).toBe(ECustomExceptionCode['ROLE-005']);
+                    if(e instanceof CustomException) expect(e['statusCode']).toBe(401);
+    
+                };
+                
+            });
+
+            it('공지사항 작성 규칙 위반', async() => {
+
+                try {
+
+                    body.isAnonymous = false;
+                    user.userId = joinerUserId;
+
+                    await controller.updateNotice(
+                        user,
+                        param,
+                        body
+                    );
+    
+                } catch (e) {
+    
+                    if(e instanceof CustomException) expect(e['errorCode']).toBe(ECustomExceptionCode['ROLE-006']);
+                    if(e instanceof CustomException) expect(e['statusCode']).toBe(401);
+    
+                };
+
+            });
+
+            it('시나리오 : 공지사항 수정', async () => {
+                
+                body.postName = 'POST_TEST_NOTICE_UPDATE'
+
+                await req
+                    .patch(`/space/${targetSpaceId}/post/${targetNoticePostId}/notice`)
+                    .set('Authorization', `Bearer ${adminAccessToken}`)
+                    .send(body)
+                    .query(query)
+                    .then(async(res) => {
+
+                        const { body } : {
+                            body : {
+                                putPresignedUrlList: {
+                                    idx: number,
+                                    putPresignedUrl: string;
+                                }[]
+                            }
+                        }= res;
+
+                        expect(body?.putPresignedUrlList[0].putPresignedUrl).toBe('hello');
+                        expect(body?.putPresignedUrlList.length).toBe(1);
+
+                        const post = await postRepo.getPostByPostId(targetNoticePostId);
+
+                        expect(post?.isAnonymous).toBe(0);
+                        expect(post?.postName).toBe('POST_TEST_NOTICE_UPDATE');
+
+                    })
+            });
+            
+        })
 
     });
 
