@@ -31,6 +31,8 @@ import { DeleteSpaceUserRoleDto } from '@dtos/spaces/delete.space.user.role.dto'
 import { AlarmRepository } from '@repositories/alarm.repository';
 import { PatchAlarmSettingsDto } from '@dtos/spaces/patch.alarm.settings.dto';
 import { IAlarmOptions } from '@models/interfaces/i.alarm';
+import { DEFAULT_IMAGE } from '@common/constants/default.image';
+import { PostSpaceRoleDto } from '@dtos/spaces/post.space.role.dto';
 
 @Injectable()
 export class SpaceService {
@@ -282,6 +284,45 @@ export class SpaceService {
                 };
 
             }, {
+            user,
+            param,
+            body
+        })
+    };
+
+    async postSpaceRole(
+        user: IUser,
+        param: SpaceParamDto,
+        body: PostSpaceRoleDto
+    ){
+
+        await this.db.transaction(
+            async(entityManager: EntityManager, args) => {
+
+                const { param, body } = args;
+                const { spaceId } = param;
+                const { roleLevel, roleName, roles } = body;
+
+                const createdAt = this.dayjs.getDatetimeByOptions('YYYY-MM-DD HH:mm:ss');
+
+                const insertSpaceRole = await this.spaceRepo.insertSpaceRole(
+                    entityManager,
+                    spaceId,
+                    roleName,
+                    roleLevel,
+                    createdAt,
+                    roles
+                );
+                if(insertSpaceRole.generatedMaps.length !== 1){
+                    throw new CustomException(
+                        "역할 생성에 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+
+
+        }, {
             user,
             param,
             body
@@ -610,7 +651,9 @@ export class SpaceService {
             spaceUserRoles,
             spaceRoles,
             spaceId,
-            spaceLogo,
+            spaceLogo: spaceRelation?.spaceLogo ? 
+                await this.s3.getPresignedUrl(`${spaceRelation.userId}/${spaceId}/${spaceLogo}`) : 
+                await this.s3.getPresignedUrl(DEFAULT_IMAGE),
             spaceName
         }
     };

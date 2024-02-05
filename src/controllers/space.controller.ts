@@ -27,6 +27,9 @@ import { IUser } from '@models/interfaces/i.user';
 import { PatchSpaceRoleDto } from '@dtos/spaces/patch.space.role.dto';
 import { PageQueryDto } from '@dtos/page.query.dto';
 import { DeleteSpaceUserRoleDto } from '@dtos/spaces/delete.space.user.role.dto';
+import { PatchAlarmSettingsDto } from '@dtos/spaces/patch.alarm.settings.dto';
+import { PostSpaceDto } from '@dtos/spaces/post.space.dto';
+import { PostSpaceRoleDto } from '@dtos/spaces/post.space.role.dto';
 
 @UseGuards(JwtUserGuard)
 @Controller('space')
@@ -37,7 +40,7 @@ export class SpaceController {
     /** 공간 생성 */
     @Post('/')
     async postSpace(
-        @Body() body: any,
+        @Body() body: PostSpaceDto,
         @User() user: IUser
     ) {
 
@@ -64,14 +67,30 @@ export class SpaceController {
         )
     };
 
-    /** 공간 구성원 역할 수정 */
-    @Patch('/alarm/settings')
-    async updateAlarmSettings(
+    @Post('/owner/:spaceId/role')
+    async postSpaceRole(
+        @User() user: IUser,
         @Param() param: SpaceParamDto,
-        @Body() body: PatchSpaceRoleDto
+        @Body() body: PostSpaceRoleDto
+    ){
+
+        void await this.service.postSpaceRole(
+            user,
+            param,
+            body
+        )
+    };
+
+    /** 공간 알람 옵션 수정 */
+    @Patch('/:spaceId/alarm/settings')
+    async updateAlarmSettings(
+        @User() user: IUser,
+        @Param() param: SpaceParamDto,
+        @Body() body: PatchAlarmSettingsDto
     ) {
 
-        await this.service.updateSpaceRole(
+        await this.service.updateAlarmSettings(
+            user,
             param,
             body
         );

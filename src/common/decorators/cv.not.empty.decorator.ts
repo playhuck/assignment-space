@@ -11,7 +11,7 @@ export function IsNotEmptyEmail() {
 }
 
 export function IsNotEmptyBoolean() {
-    return applyDecorators(IsNotEmpty(), IsBoolean(), Transform(v => v.value === 'true'));
+    return applyDecorators(IsNotEmpty(), IsBoolean(), Transform(v => v.value === true));
 };
 
 export function IsNotEmptyNumber() {

@@ -302,6 +302,7 @@ describe('Space Test', () => {
                     true,
                     'notice'
                 );
+                
             });
 
             it('잘못된 게시글 카테고리', async() => {
