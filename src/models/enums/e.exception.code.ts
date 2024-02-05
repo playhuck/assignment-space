@@ -13,6 +13,7 @@ export enum ECustomExceptionCode {
   /** 게시글 카테고리 오류 */ 'POST-002' = 'POST-002',
 
   /** 댓글을 찾을 수 없음 */ 'COMMENT-001' = 'COMMENT-001',
+  /** 답글을 찾을 수 없음 */ 'COMMENT-002' = 'COMMENT-002',
 
   /** 소유자만 이용할 수 있습니다. */ 'ROLE-001' = 'ROLE-001',
   /** 누군가 사용중인 역할[삭제불가]. */ 'ROLE-002' = 'ROLE-002',

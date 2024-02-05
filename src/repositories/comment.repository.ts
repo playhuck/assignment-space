@@ -1,6 +1,8 @@
+import { PatchReplyDto } from "@dtos/comments/patch.reply.dto";
+import { ReplyParamDto } from "@dtos/comments/reply.param.dto";
 import { Comment } from "@entities/post.comment.entity";
 import { CommentReply } from "@entities/post.comment.reply.entity";
-import { IOnlyComment } from "@models/interfaces/i.comment";
+import { IOnlyComment, IOnlyReply } from "@models/interfaces/i.comment";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
@@ -99,6 +101,85 @@ export class CommentRepository {
         const deleteComment = await entityManager.softRemove(Comment, deleteCommentRelation!);
 
         return deleteComment;
+    };
+
+    async getReplyById<T extends IOnlyReply>(
+        replyId: number
+    ): Promise<T | null> {
+
+        const reply = await this.replyRepo
+            .createQueryBuilder()
+            .select([
+                'post_comment_reply_id AS replyId',
+                'comment_id AS commentId',
+                'user_id AS userId',
+                'post_comment_reply AS commentReply',
+                'updated_at AS updatedAt',
+                'created_at AS createdAt',
+                'deleted_at AS deletedAt'
+            ])
+            .where(`post_comment_reply_id =:replyId`, { replyId })
+            .getRawOne();
+
+        return reply as T | null;
+    };
+
+    async insertReply(
+        entityManager: EntityManager,
+        userId: number,
+        commentId: number,
+        commentReply: string,
+        isAnonymous: boolean,
+        createdAt: string
+    ){
+
+        const insertReply = await entityManager.insert(CommentReply, {
+            userId,
+            commentId,
+            commentReply,
+            isAnonymous: isAnonymous ? 1 : 0,
+            createdAt
+        });
+
+        return insertReply;
+
+    };
+
+    async updateReply(
+        entityManager: EntityManager,
+        userId: number,
+        param: ReplyParamDto,
+        body: PatchReplyDto,
+        updatedAt: string
+    ) {
+
+        const { commentId, replyId } = param;
+        const { commentReply, isAnonymous } = body;
+
+        const updateReply = await entityManager.update(CommentReply, {
+            userId,
+            commentId,
+            replyId
+        }, {
+            commentReply,
+            isAnonymous: isAnonymous ? 1 : 0,
+            updatedAt
+        });
+
+        return updateReply;
+
+    };
+
+    async deleteReply(
+        entityManager: EntityManager,
+        replyId: number
+    ){
+
+        const deleteReply = await entityManager.softDelete(CommentReply, {
+            replyId
+        });
+
+        return deleteReply;
     }
 
 }
