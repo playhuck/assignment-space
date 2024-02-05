@@ -6,7 +6,13 @@
 
 ### 버전관리
 
-| --- | --- |
+| Framework/Library | Version |
+| ----------------- | ------- |
+| Nest.js           | 10.3.x  |
+| TypeORM           | 0.3.17  |
+| RDS (MySQL)       | 8.0.35  |
+| Node.js           | 18.18.x |
+| TypeScript        | 5.3.3   |
 
 ## Database
 
