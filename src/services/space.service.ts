@@ -28,6 +28,9 @@ import { PatchSpaceRoleDto } from '@dtos/spaces/patch.space.role.dto';
 import { PageQueryDto } from '@dtos/page.query.dto';
 import { CommonUtil } from '@utils/common.util';
 import { DeleteSpaceUserRoleDto } from '@dtos/spaces/delete.space.user.role.dto';
+import { AlarmRepository } from '@repositories/alarm.repository';
+import { PatchAlarmSettingsDto } from '@dtos/spaces/patch.alarm.settings.dto';
+import { IAlarmOptions } from '@models/interfaces/i.alarm';
 
 @Injectable()
 export class SpaceService {
@@ -41,7 +44,7 @@ export class SpaceService {
 
         private readonly s3: S3Provider,
 
-        private readonly userRepo: UserRepository,
+        private readonly alarmRepo: AlarmRepository,
         private readonly spaceRepo: SpaceRepository
     ) { }
 
@@ -117,6 +120,33 @@ export class SpaceService {
                 if (insertOwnerSpaceRoleCode.generatedMaps.length !== 1) {
                     throw new CustomException(
                         "공간 역할 코드 생성에 실패 했습니다.",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+
+                const insertSpaceUserAlarm = await this.alarmRepo.insertSpaceUserAlarm(
+                    entityManager,
+                    spaceId,
+                    user.userId,
+                    createdAt
+                );
+                if (insertSpaceUserAlarm.generatedMaps.length !== 1) {
+                    throw new CustomException(
+                        "공간 소유자 알람 생성에 실패 했습니다.",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+                const insertSpaceUserAlarmSettings = await this.alarmRepo.insertSpaceUserAlarmSettings(
+                    entityManager,
+                    spaceId,
+                    user.userId,
+                    createdAt
+                );
+                if (insertSpaceUserAlarmSettings.generatedMaps.length !== 1) {
+                    throw new CustomException(
+                        "공간 소유자 알람 세팅 생성에 실패 했습니다.",
                         ECustomExceptionCode["AWS-RDS-EXCEPTION"],
                         500
                     )
@@ -219,6 +249,33 @@ export class SpaceService {
                 if (insertSpaceUserRole.generatedMaps.length !== 1) {
                     throw new CustomException(
                         "공간 참여 실패",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+
+                const insertSpaceUserAlarm = await this.alarmRepo.insertSpaceUserAlarm(
+                    entityManager,
+                    spaceId,
+                    userId,
+                    createdAt
+                );
+                if (insertSpaceUserAlarm.generatedMaps.length !== 1) {
+                    throw new CustomException(
+                        "공간 참여자 알람 생성에 실패 했습니다.",
+                        ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                        500
+                    )
+                };
+                const insertSpaceUserAlarmSettings = await this.alarmRepo.insertSpaceUserAlarmSettings(
+                    entityManager,
+                    spaceId,
+                    userId,
+                    createdAt
+                );
+                if (insertSpaceUserAlarmSettings.generatedMaps.length !== 1) {
+                    throw new CustomException(
+                        "공간 참여자 알람 세팅 생성에 실패 했습니다.",
                         ECustomExceptionCode["AWS-RDS-EXCEPTION"],
                         500
                     )
@@ -341,6 +398,35 @@ export class SpaceService {
         }
         );
     };
+
+    async updateAlarmSettings(
+        user: IUser,
+        param: SpaceParamDto,
+        body: PatchAlarmSettingsDto
+    ){
+
+        await this.db.transaction(
+            async(entityManager: EntityManager, args) => {
+
+            const { user, param, body } = args;
+            const { userId } = user;
+            const { spaceId } = param;
+
+            await this.alarmRepo.updateAlarmSettings(
+                entityManager,
+                spaceId,
+                userId,
+                body as unknown as IAlarmOptions
+            )
+
+
+        }, {
+            user,
+            param,
+            body
+        });
+
+    }
 
     async deleteSpace(
         user: IUser,

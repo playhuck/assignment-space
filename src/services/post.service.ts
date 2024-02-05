@@ -12,11 +12,12 @@ import { ECustomExceptionCode } from '@models/enums/e.exception.code';
 import { IPostFileList, IPostList } from '@models/interfaces/i.post';
 import { ISpaceUserRelation } from '@models/interfaces/i.space.return';
 import { IUser } from '@models/interfaces/i.user';
-import { TPostCategory } from '@models/types/t.post';
+import { TPostAlarmStatus, TPostCategory } from '@models/types/t.post';
 import { TRole, TRoleLevel } from '@models/types/t.role';
 import { Injectable } from '@nestjs/common';
 import { DayjsProvider } from '@providers/dayjs.provider';
 import { S3Provider } from '@providers/s3.provider';
+import { AlarmRepository } from '@repositories/alarm.repository';
 import { CommentRepository } from '@repositories/comment.repository';
 import { PostRepository } from '@repositories/post.repository';
 import { SpaceRepository } from '@repositories/space.repository';
@@ -38,7 +39,8 @@ export class PostService {
         private readonly spaceRepo: SpaceRepository,
         private readonly postRepo: PostRepository,
         private readonly userRepo: UserRepository,
-        private readonly commentRepo: CommentRepository
+        private readonly commentRepo: CommentRepository,
+        private readonly alarmRepo: AlarmRepository
     ) { };
 
     async postQuestion(
@@ -104,6 +106,28 @@ export class PostService {
                 };
 
                 const { insertId: postId } = insertPost.raw;
+
+                const getPostCreateUserIds = await this.alarmRepo.getPostCreateUserIds(
+                    entityManager,
+                    spaceId
+                );
+                const userIdsLength = getPostCreateUserIds.length;
+                if (userIdsLength > 0) {
+                    const updateAllPostCreateAlarm = await this.alarmRepo.updateAllPostCreateAlarm(
+                        entityManager,
+                        spaceId,
+                        postId,
+                        getPostCreateUserIds,
+                        createdAt
+                    );
+                    if (userIdsLength !== updateAllPostCreateAlarm.affected) {
+                        throw new CustomException(
+                            "게시글 생성 알람 반영에 실패",
+                            ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                            500
+                        )
+                    }
+                };
 
                 let putPresignedUrlList: Array<{
                     idx: number,
@@ -207,6 +231,28 @@ export class PostService {
 
                 const { insertId: postId } = insertPost.raw;
 
+                const getPostCreateUserIds = await this.alarmRepo.getPostCreateUserIds(
+                    entityManager,
+                    spaceId
+                );
+                const userIdsLength = getPostCreateUserIds.length;
+                if (userIdsLength > 0) {
+                    const updateAllPostCreateAlarm = await this.alarmRepo.updateAllPostCreateAlarm(
+                        entityManager,
+                        spaceId,
+                        postId,
+                        getPostCreateUserIds,
+                        createdAt
+                    );
+                    if (userIdsLength !== updateAllPostCreateAlarm.affected) {
+                        throw new CustomException(
+                            "공지사항 생성 알람 반영에 실패",
+                            ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                            500
+                        )
+                    }
+                };
+
                 let putPresignedUrlList: Array<{
                     idx: number,
                     putPresignedUrl: string
@@ -282,6 +328,28 @@ export class PostService {
                         ECustomExceptionCode["AWS-RDS-EXCEPTION"],
                         500
                     )
+                };
+
+                const getPostUpdateUserIds = await this.alarmRepo.getPostUpdateUserIds(
+                    entityManager,
+                    spaceId
+                );
+                const userIdsLength = getPostUpdateUserIds.length;
+                if (userIdsLength > 0) {
+                    const updateAllPostUpdateAlarm = await this.alarmRepo.updateAllPostUpdateAlarm(
+                        entityManager,
+                        spaceId,
+                        postId,
+                        getPostUpdateUserIds,
+                        updatedAt
+                    );
+                    if (userIdsLength !== updateAllPostUpdateAlarm.affected) {
+                        throw new CustomException(
+                            "게시글 수정 알람 반영에 실패",
+                            ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                            500
+                        )
+                    }
                 };
 
                 let putPresignedUrlList: Array<{
@@ -383,6 +451,28 @@ export class PostService {
                         ECustomExceptionCode["AWS-RDS-EXCEPTION"],
                         500
                     )
+                };
+
+                const getPostUpdateUserIds = await this.alarmRepo.getPostUpdateUserIds(
+                    entityManager,
+                    spaceId
+                );
+                const userIdsLength = getPostUpdateUserIds.length;
+                if (userIdsLength > 0) {
+                    const updateAllPostUpdateAlarm = await this.alarmRepo.updateAllPostUpdateAlarm(
+                        entityManager,
+                        spaceId,
+                        postId,
+                        getPostUpdateUserIds,
+                        updatedAt
+                    );
+                    if (userIdsLength !== updateAllPostUpdateAlarm.affected) {
+                        throw new CustomException(
+                            "공지사항 수정 알람 반영에 실패",
+                            ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                            500
+                        )
+                    }
                 };
 
                 let putPresignedUrlList: Array<{
@@ -500,19 +590,47 @@ export class PostService {
         query: PageQueryDto
     ): Promise<{
         noticeList: IPostList[],
-        questionList: IPostList[]
+        questionList: IPostList[],
+        postAlarmStatus: TPostAlarmStatus
     }> {
 
         const { spaceId } = param;
-        const { spaceRole } = userSpaceRelation;
+        const { spaceRole, userId } = userSpaceRelation;
         const { roleLevel } = spaceRole;
         const {
             page,
             pageCount: take,
             sortCreated
         } = query;
+        let postAlarmStatus: TPostAlarmStatus = 'none';
 
         const skip = this.util.skipedItem(page, take);
+
+        const getAlarm = await this.alarmRepo.getSpaceUserAlarmByIds(
+            spaceId,
+            userId
+        )!;
+
+        const {
+            postId,
+            postCreate,
+            postUdpate,
+            commentCreate
+        } = getAlarm;
+        if (postCreate === 1 || postUdpate === 1 || commentCreate === 1) {
+
+            const targetAlarmPost = await this.postRepo.getPostByPostId(postId);
+            if (targetAlarmPost) {
+
+                const { postCategory } = targetAlarmPost;
+                postAlarmStatus =
+                    postCategory === 'notice' && postCreate === 1 ? 'notice-create' :
+                        postCategory === 'notice' && postUdpate === 1 ? 'notice-update' :
+                            postCreate === 1 ? 'question-create' :
+                                postUdpate === 1 ? 'qusetion-update' :
+                                    commentCreate === 1 ? 'comment-create' : 'none';
+            };
+        };
 
         const postList = await this.postRepo.getPostListBySpaceId(
             spaceId,
@@ -551,6 +669,7 @@ export class PostService {
         const questionList = await this.sortingPostList(postQuestion); /** index 4까지 인기게시물 */
 
         return {
+            postAlarmStatus,
             noticeList,
             questionList
         }
@@ -562,74 +681,108 @@ export class PostService {
         param: SpacePostParamDto
     ) {
 
-        const { spaceId, postId } = param;
-        const {
-            userId: viewerUserId,
-            spaceRole
-        } = userSpaceRelation;
-        const { roleLevel } = spaceRole;
+        const getPost = await this.db.transaction(
+            async (entityManager: EntityManager, args) => {
 
-        const post = await this.postRepo.getPostRelationByPostId(postId);
-        if (!post) {
-            throw new CustomException(
-                "게시글을 찾을 수 없습니다.",
-                ECustomExceptionCode["POST-001"],
-                403
-            )
-        };
-        const {
-            postName,
-            postCategory,
-            postContents,
-            postFiles,
-            isAnonymous,
-            postComments,
-            userId: postUserId
-        } = post;
+                const { param, userSpaceRelation } = args;
 
-        const postFileList = await this.getFilesUrlList(
-            postFiles,
-            post.userId,
-            spaceId,
-            postId
-        );
+                const { spaceId, postId } = param;
+                const {
+                    userId: viewerUserId,
+                    spaceRole
+                } = userSpaceRelation;
+                const { roleLevel } = spaceRole;
 
-        const user = await this.userRepo.getUserById(viewerUserId);
-        if (!user) {
-            throw new CustomException(
-                "존재하지 않는 회원",
-                ECustomExceptionCode['USER-001'],
-                403
-            )
-        };
-        const { email, firstName, lastName, profileImage } = user;
+                const post = await this.postRepo.getPostRelationByPostId(postId);
+                if (!post) {
+                    throw new CustomException(
+                        "게시글을 찾을 수 없습니다.",
+                        ECustomExceptionCode["POST-001"],
+                        403
+                    )
+                };
+                const {
+                    postName,
+                    postCategory,
+                    postContents,
+                    postFiles,
+                    isAnonymous,
+                    postComments,
+                    userId: postUserId
+                } = post;
 
-        let showAnonymous = this.showAnonymous(isAnonymous, post.userId, viewerUserId, roleLevel);
+                const postFileList = await this.getFilesUrlList(
+                    postFiles,
+                    post.userId,
+                    spaceId,
+                    postId
+                );
 
-        const userImage = profileImage ?
-            await this.s3.getPresignedUrl(`${postUserId}/${spaceId}/${profileImage}`) :
-            await this.s3.getPresignedUrl(`defaultImage.png`);
+                const user = await this.userRepo.getUserById(viewerUserId);
+                if (!user) {
+                    throw new CustomException(
+                        "존재하지 않는 회원",
+                        ECustomExceptionCode['USER-001'],
+                        403
+                    )
+                };
+                const { email, firstName, lastName, profileImage } = user;
 
-        const commentList = await this.setCommentAnonymous(
-            postComments,
-            viewerUserId,
-            roleLevel
-        );
+                const getAlarm = await this.alarmRepo.getSpaceUserAlarmByIds(
+                    spaceId,
+                    user.userId
+                );
+                if (
+                    getAlarm?.commentCreate === 1 ||
+                    getAlarm?.postCreate === 1 ||
+                    getAlarm?.postUdpate === 1
+                ) {
+                    const updateAlarmOff = await this.alarmRepo.updateAlarmOff(
+                        entityManager,
+                        spaceId,
+                        user.userId,
+                        postId
+                    );
+                    if (updateAlarmOff.affected !== 1) {
+                        throw new CustomException(
+                            "게시글 알람 OFF 실패",
+                            ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                            500
+                        )
+                    };
+                }
+                let showAnonymous = this.showAnonymous(isAnonymous, post.userId, viewerUserId, roleLevel);
 
-        return {
-            postName,
-            postCategory,
-            postContents,
-            postId,
-            postFiles: postFileList,
-            userId: showAnonymous ? post.userId : 0,
-            name: showAnonymous ? lastName + firstName : '',
-            email: showAnonymous ? email : '',
-            profileImage: showAnonymous ?
-                userImage :
-                await this.s3.getPresignedUrl(`defaultImage.png`),
-            commentList
-        };
+                const userImage = profileImage ?
+                    await this.s3.getPresignedUrl(`${postUserId}/${spaceId}/${profileImage}`) :
+                    await this.s3.getPresignedUrl(`defaultImage.png`);
+
+                const commentList = await this.setCommentAnonymous(
+                    postComments,
+                    viewerUserId,
+                    roleLevel
+                );
+
+                return {
+                    postName,
+                    postCategory,
+                    postContents,
+                    postId,
+                    postFiles: postFileList,
+                    userId: showAnonymous ? post.userId : 0,
+                    name: showAnonymous ? lastName + firstName : '',
+                    email: showAnonymous ? email : '',
+                    profileImage: showAnonymous ?
+                        userImage :
+                        await this.s3.getPresignedUrl(`defaultImage.png`),
+                    commentList
+                };
+            }, {
+            userSpaceRelation,
+            param
+        });
+
+        return getPost;
 
     };
 
@@ -725,19 +878,19 @@ export class PostService {
         counts.dupCommentCount = commentList.length
 
         await Promise.all(commentList.map(
-            async(comm, i) => {
+            async (comm, i) => {
 
                 const { commentId } = comm;
 
                 const getReplyList = await this.commentRepo.getReplyListByCommentId(commentId);
 
-                if(getReplyList.length === 0) return;
+                if (getReplyList.length === 0) return;
 
                 const uniqueReplyUsers = new Set(getReplyList.map(reply => reply.userId));
                 counts.replyCount += uniqueReplyUsers.size;
                 counts.dupReplyCount += getReplyList.length;
 
-        }));
+            }));
 
         return {
             commentCount: counts.commentCount + counts.replyCount,
@@ -872,7 +1025,7 @@ export class PostService {
                 showAnonymous = false;
             }
         };
-        
+
         return showAnonymous;
 
     };

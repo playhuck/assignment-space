@@ -6,10 +6,10 @@ import { CustomBaseEntity } from './base.entity';
 @Entity('space_user_alarm_settings')
 export class SpaceUserAlarmSettings extends CustomBaseEntity {
   @PrimaryGeneratedColumn({
-    name: 'space_user_alarm_id',
+    name: 'space_user_alarm_settings_id',
     type: 'int',
   })
-  spaceUserAlarmId!: number;
+  spaceUserAlarmSettingsId!: number;
 
   @Column({
     name: 'space_id',
@@ -28,21 +28,21 @@ export class SpaceUserAlarmSettings extends CustomBaseEntity {
     type: 'tinyint',
     default: 1,
   })
-  postCreateAlarm!: number;
+  postCreate!: number;
 
   @Column({
     name: 'post_update',
     type: 'tinyint',
     default: 1,
   })
-  postUpdateAlarm!: number;
+  postUpdate!: number;
 
   @Column({
     name: 'comment_create',
     type: 'tinyint',
     default: 1,
   })
-  commentCreateAlarm!: number;
+  commentCreate!: number;
 
   @ManyToOne(() => Space, (space) => space.spaceUserAlarmSettings)
   @JoinColumn({ name: 'space_id' })

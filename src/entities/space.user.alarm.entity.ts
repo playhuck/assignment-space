@@ -2,9 +2,10 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 't
 import { Space } from './space.entity';
 import { User } from './user.entity';
 import { Post } from './post.entity';
+import { CustomBaseEntity } from './base.entity';
 
 @Entity('space_user_alarm')
-export class SpaceUserAlarm {
+export class SpaceUserAlarm extends CustomBaseEntity {
     @PrimaryGeneratedColumn({
         name: 'space_user_alarm_id',
         type: 'int',

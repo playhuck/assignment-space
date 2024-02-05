@@ -62,7 +62,21 @@ export class SpaceController {
             param,
             body
         )
-    }
+    };
+
+    /** 공간 구성원 역할 수정 */
+    @Patch('/alarm/settings')
+    async updateAlarmSettings(
+        @Param() param: SpaceParamDto,
+        @Body() body: PatchSpaceRoleDto
+    ) {
+
+        await this.service.updateSpaceRole(
+            param,
+            body
+        );
+
+    };
 
     /** 공간 이름 수정 */
     @UseGuards(SpaceRoleGuard)

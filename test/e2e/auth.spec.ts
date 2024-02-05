@@ -197,9 +197,6 @@ describe('User Authentication Test', () => {
                         }
                     });
 
-                    console.log("USER:", user);
-                    
-
                     expect(user).toBeTruthy();
 
                     if (user) targetUserId = user?.userId;

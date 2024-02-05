@@ -1,7 +1,9 @@
-import { Post } from "@entities/post.entity";
 
 type TPostCategory = 'notice' | 'question';
 
+type TPostAlarmStatus = 'notice-create' | 'notice-update' | 'question-create' | 'qusetion-update' | 'comment-create' | 'none'
+
 export {
-    TPostCategory
+    TPostCategory,
+    TPostAlarmStatus
 };

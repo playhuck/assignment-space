@@ -15,6 +15,7 @@ import { SpaceRepository } from '@repositories/space.repository';
 import { UserRepository } from '@repositories/user.repository';
 import { PostRepository } from '@repositories/post.repository';
 import { CommentRepository } from '@repositories/comment.repository';
+import { AlarmRepository } from '@repositories/alarm.repository';
 
 import { Space } from '@entities/space.entity';
 import { SpaceRoleCode } from '@entities/space.role.code.entity';
@@ -25,6 +26,8 @@ import { Post } from '@entities/post.entity';
 import { PostFile } from '@entities/post.file.entity';
 import { CommentReply } from '@entities/post.comment.reply.entity';
 import { Comment } from '@entities/post.comment.entity';
+import { SpaceUserAlarm } from '@entities/space.user.alarm.entity';
+import { SpaceUserAlarmSettings } from '@entities/space.user.alarm.settings.entity';
 
 @Global()
 @Module({
@@ -36,6 +39,8 @@ import { Comment } from '@entities/post.comment.entity';
             SpaceRole,
             SpaceUserRole,
             SpaceRoleCode,
+            SpaceUserAlarm,
+            SpaceUserAlarmSettings,
             
             Post,
             PostFile,
@@ -58,6 +63,7 @@ import { Comment } from '@entities/post.comment.entity';
 
         UserRepository,
         SpaceRepository,
+        AlarmRepository,
         PostRepository,
         CommentRepository
     ],
@@ -75,6 +81,7 @@ import { Comment } from '@entities/post.comment.entity';
 
         UserRepository,
         SpaceRepository,
+        AlarmRepository,
         PostRepository,
         CommentRepository
     ]

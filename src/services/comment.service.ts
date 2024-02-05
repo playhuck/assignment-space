@@ -18,6 +18,7 @@ import { IUser } from '@models/interfaces/i.user';
 import { ReplyParamDto } from '@dtos/comments/reply.param.dto';
 import { PostReplyDto } from '@dtos/comments/post.reply.dto';
 import { PatchReplyDto } from '@dtos/comments/patch.reply.dto';
+import { AlarmRepository } from '@repositories/alarm.repository';
 
 @Injectable()
 export class CommentService {
@@ -27,9 +28,7 @@ export class CommentService {
 
         private readonly dayjs: DayjsProvider,
 
-        private readonly spaceRepo: SpaceRepository,
-        private readonly postRepo: PostRepository,
-        private readonly userRepo: UserRepository,
+        private readonly alarmRepo: AlarmRepository,
         private readonly commentRepo: CommentRepository
     ) { }
 
@@ -44,7 +43,7 @@ export class CommentService {
 
                 const { user, param, body } = args;
                 const { userId } = user;
-                const { postId } = param;
+                const { postId, spaceId } = param;
                 const { comment, isAnonymous } = body;
 
                 const createdAt = this.dayjs.getDatetimeByOptions('YYYY-MM-DD HH:mm:ss');
@@ -63,6 +62,28 @@ export class CommentService {
                         ECustomExceptionCode['AWS-RDS-EXCEPTION'],
                         500
                     )
+                };
+
+                const getCommentCreateUserIds = await this.alarmRepo.getCommentCreateUserIds(
+                    entityManager,
+                    spaceId
+                );
+                const userIdsLength = getCommentCreateUserIds.length;
+                if (userIdsLength > 0) {
+                    const updateAllCommentCreateAlarm = await this.alarmRepo.updateAllCommentCreateAlarm(
+                        entityManager,
+                        spaceId,
+                        postId,
+                        getCommentCreateUserIds,
+                        createdAt
+                    );
+                    if (userIdsLength !== updateAllCommentCreateAlarm.affected) {
+                        throw new CustomException(
+                            "게시글 댓글 알람 반영에 실패",
+                            ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                            500
+                        )
+                    }
                 };
 
             }, {
@@ -180,7 +201,7 @@ export class CommentService {
 
                 const { user, param, body } = args;
                 const { userId } = user;
-                const { commentId } = param;
+                const { commentId, spaceId, postId } = param;
                 const { commentReply, isAnonymous } = body;
 
                 const createdAt = this.dayjs.getDatetimeByOptions('YYYY-MM-DD HH:mm:ss');
@@ -199,6 +220,28 @@ export class CommentService {
                         ECustomExceptionCode['AWS-RDS-EXCEPTION'],
                         500
                     )
+                };
+
+                const getCommentCreateUserIds = await this.alarmRepo.getCommentCreateUserIds(
+                    entityManager,
+                    spaceId
+                );
+                const userIdsLength = getCommentCreateUserIds.length;
+                if (userIdsLength > 0) {
+                    const updateAllCommentCreateAlarm = await this.alarmRepo.updateAllCommentCreateAlarm(
+                        entityManager,
+                        spaceId,
+                        postId,
+                        getCommentCreateUserIds,
+                        createdAt
+                    );
+                    if (userIdsLength !== updateAllCommentCreateAlarm.affected) {
+                        throw new CustomException(
+                            "게시글 답글 알람 반영에 실패",
+                            ECustomExceptionCode["AWS-RDS-EXCEPTION"],
+                            500
+                        )
+                    }
                 };
 
 
