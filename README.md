@@ -19,7 +19,7 @@
 ---
 
 - 데이터베이스 version_1
-  https://github.com/playhuck/Algorithm-inflearn/assets/105256335/28fc2246-8039-4892-8147-36f4e7770aba
+  <img src="https://github.com/playhuck/Algorithm-inflearn/assets/105256335/28fc2246-8039-4892-8147-36f4e7770aba">
 - 데이터베이스 version_2
   https://github.com/playhuck/Algorithm-inflearn/assets/105256335/9106f387-de2b-4744-b15e-f2f78500cdd9
 - 데이터베이스 version_3
