@@ -19,17 +19,29 @@
 ---
 
 <details>
-  <summary>데이터베이스 version_1</summary>
+  <summary>데이터베이스 v1</summary>
 
   <img src="https://github.com/playhuck/Algorithm-inflearn/assets/105256335/28fc2246-8039-4892-8147-36f4e7770aba">
 
 </details>
-- 데이터베이스 version_2
-  https://github.com/playhuck/Algorithm-inflearn/assets/105256335/9106f387-de2b-4744-b15e-f2f78500cdd9
-- 데이터베이스 version_3
-  https://github.com/playhuck/Algorithm-inflearn/assets/105256335/3f515788-dfa9-4149-a3ce-cd2d01a4a6a3
-- 데이터베이스 최종
-  https://github.com/playhuck/Algorithm-inflearn/assets/105256335/cfc7cc6e-1548-4292-8fcb-a33e8ed7f09f
+<details>
+  <summary>데이터베이스 v2</summary>
+
+  <img src="https://github.com/playhuck/Algorithm-inflearn/assets/105256335/9106f387-de2b-4744-b15e-f2f78500cdd9">
+
+</details>
+<details>
+  <summary>데이터베이스 v3</summary>
+
+  <img src="https://github.com/playhuck/Algorithm-inflearn/assets/105256335/3f515788-dfa9-4149-a3ce-cd2d01a4a6a3">
+
+</details>
+<details>
+  <summary>데이터베이스 v4</summary>
+
+  <img src="https://github.com/playhuck/Algorithm-inflearn/assets/105256335/cfc7cc6e-1548-4292-8fcb-a33e8ed7f09f">
+
+</details>
 
 Database는 Local MySql로 연결하지 않고, RDS로 Mysql 8버전을 연결하여 사용 했습니다.
 
