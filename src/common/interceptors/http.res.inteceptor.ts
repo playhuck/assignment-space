@@ -21,8 +21,10 @@ export class HttpResponseInterceptor implements NestInterceptor {
                 if (data) {
                     const res = context.switchToHttp().getResponse();
                     const request = context.switchToHttp().getRequest<Request>();
+                    console.log(request.method);
+                    
 
-                    this.logger.info(request.url, 'has been excuted')
+                    this.logger.info(request.method, request.url, 'has been excuted')
 
                     if ('tokens' in data) {
                         const { tokens, ...datas } = data;

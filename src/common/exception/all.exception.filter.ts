@@ -27,14 +27,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
         const request = ctx.getRequest<Request>();
-
+    
         if (this.logger) {
             if (exception instanceof CustomException) {
-                this.logger.warn(request.originalUrl, exception.message, exception.errorCode);
+                this.logger.warn( request.method, request.originalUrl, exception.message, exception.errorCode);
             } else if (exception instanceof HttpException) {
-                this.logger.error(request.originalUrl, exception["message"], exception["statusCode"]);
+                this.logger.error(request.method, request.originalUrl, exception["message"], exception["statusCode"]);
             } else {
-                this.logger.error(request.originalUrl, exception);
+                this.logger.error(request.method, request.originalUrl, exception);
             }
         }
 

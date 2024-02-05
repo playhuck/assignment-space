@@ -46,10 +46,10 @@ export class LoggerUtil {
         }
     }
 
-    public debug(path, message, errorCode?) {
+    public debug(method, path, message, errorCode?) {
         const timestamp = this._getTimestamp();
         this.logger.log({
-            timestamp,
+            method,
             level: 'debug',
             path,
             message,
@@ -57,10 +57,10 @@ export class LoggerUtil {
         })
     }
 
-    public info(path, message) {
+    public info( method, path, message) {
         const timestamp = this._getTimestamp();
         this.logger.log({
-            timestamp,
+            method,
             level: 'info',
             path,
             message
@@ -68,10 +68,10 @@ export class LoggerUtil {
 
     }
 
-    public warn(path, message, errorCode?) {
+    public warn(method, path, message, errorCode?) {
         const timestamp = this._getTimestamp();
         this.logger.log({
-            timestamp,
+            method,
             level: 'warn',
             path,
             message,
@@ -80,10 +80,10 @@ export class LoggerUtil {
 
     }
 
-    public error(path, message, errorCode?) {
+    public error( method, path, message, errorCode?) {
         const timestamp = this._getTimestamp();
         this.logger.log({
-            timestamp,
+            method,
             level: 'error',
             path,
             message,
@@ -92,13 +92,13 @@ export class LoggerUtil {
 
     }
 
-    private _logPrintf = printf(({ timestamp, level, path, message, errorCode }) => {
+    private _logPrintf = printf(({ method, level, path, message, errorCode }) => {
         const formattedLogLevel = this._getFormattedLogLevel(level);
         
         if (errorCode == null) {
-            return `${timestamp} ${process.env.NODE_ENV} ${formattedLogLevel} ${path} ${message}`;
+            return `${method} ${process.env.NODE_ENV} ${formattedLogLevel} ${path} ${message}`;
         }
-        return `${timestamp} ${process.env.NODE_ENV} ${formattedLogLevel} ${path} ${errorCode} ${message}`;
+        return `${method} ${process.env.NODE_ENV} ${formattedLogLevel} ${path} ${errorCode} ${message}`;
     })
 
     private _getFormattedLogLevel(originLevel: string) {
