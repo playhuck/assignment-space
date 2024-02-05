@@ -28,12 +28,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const response = ctx.getResponse<Response>();
         const request = ctx.getRequest<Request>();
 
-        if (exception instanceof CustomException) {
-            this.logger.warn(request.originalUrl, exception.message, exception.errorCode);
-        } else if (exception instanceof HttpException) {
-            this.logger.error(request.originalUrl, exception["message"], exception["statusCode"]);
-        } else {
-            this.logger.error(request.originalUrl, exception);
+        if (this.logger) {
+            if (exception instanceof CustomException) {
+                this.logger.warn(request.originalUrl, exception.message, exception.errorCode);
+            } else if (exception instanceof HttpException) {
+                this.logger.error(request.originalUrl, exception["message"], exception["statusCode"]);
+            } else {
+                this.logger.error(request.originalUrl, exception);
+            }
         }
 
         response
@@ -42,6 +44,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
                 isSuccess: false,
                 ...this.errorResponse(exception)
             });
+
     }
 
     private statusCode(exception: unknown): number {

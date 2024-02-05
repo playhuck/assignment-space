@@ -11,7 +11,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "prestart": "npm run build",
-    "start": "pm2 -u root startOrReload ecosystem.config.json --env production",
+    "start": "cross-env NODE_ENV=prod nest start --watch",
     "dev": "cross-env NODE_ENV=dev nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",

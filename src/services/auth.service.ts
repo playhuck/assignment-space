@@ -80,12 +80,12 @@ export class AuthService {
     async signIn(
         body: PostSignInDto
     ) {
-
+        
         const tokens = await this.db.transaction(
             async (entityManager: EntityManager, args) => {
 
                 const { email, password } = args.body;
-
+    
                 const getAuthentificData = await this.userRepo.getAuthentificData(email);
                 if (!getAuthentificData) {
                     throw new CustomException(
@@ -94,7 +94,7 @@ export class AuthService {
                         400
                     );
                 };
-                
+
                 const compared = await this.bcrypt.comparedPassword(
                     password,
                     getAuthentificData.password

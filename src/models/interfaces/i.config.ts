@@ -3,7 +3,6 @@ import { Algorithm } from 'jsonwebtoken';
 
 export interface IConfig {
     PORT: number;
-    STAGE: TNODE_ENV;
     MYSQL_ENV: IMYSQL_ENV;
 
     JWT: IJWT_ENV;

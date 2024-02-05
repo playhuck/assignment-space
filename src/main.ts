@@ -14,7 +14,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
   const port = config.get('PORT', 4000);
-  const stage: TNODE_ENV = config.get('STAGE')!;
+  const stage: TNODE_ENV = config.get('NODE_ENV')!;
 
   app.useGlobalPipes(new ValidationPipe({
     transform: true,

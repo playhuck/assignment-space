@@ -3,7 +3,6 @@ import { getEnvLiteralTypeValue, getEnvMode, getEnvNum, getEnvStr, getPemKey } f
 
 export default (): IConfig => ({
     PORT: getEnvNum('PORT') || 3000,
-    STAGE: getEnvMode('STAGE'),
     JWT: {
         JWT_SECRET_KEY: getEnvStr('JWT_SECRET_KEY'),
         JWT_ACCESS_EXPIRED_IN: getEnvStr('JWT_ACCESS_EXPIRED_IN'),
@@ -19,7 +18,9 @@ export default (): IConfig => ({
         port: getEnvNum('MYSQL_ENV_PORT'),
         username: getEnvStr('MYSQL_ENV_USER'),
         password: getEnvStr('MYSQL_ENV_PWD'),
-        database: process.env.NODE_ENV === 'test' ? getEnvStr('MYSQL_ENV_TEST_DB_NAME') : getEnvStr('MYSQL_ENV_DB_NAME')
+        database: process.env.NODE_ENV === 'test' ? 
+        getEnvStr('MYSQL_ENV_TEST_DB_NAME') : process.env.NODE_ENV === 'dev' ? 
+        getEnvStr('MYSQL_ENV_DEV_DB_NAME') : getEnvStr('MYSQL_ENV_PROD_DB_NAME') 
     },
     S3: {
         ACCESS_KEY: getEnvStr('S3_ACCESS_KEY'),
