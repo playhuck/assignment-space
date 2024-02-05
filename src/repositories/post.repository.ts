@@ -31,16 +31,18 @@ export class PostRepository {
 
     async getPostRelationByPostId(
         postId: number
-    ){
+    ): Promise<Post | null> {
 
-        const post = await this.postRepo.findOne({
-            where: {
-                postId
-            },
-            relations: [
-                'postFiles'
-            ]
-        });
+        const post = await this.postRepo
+            .createQueryBuilder('post')
+            .leftJoinAndSelect('post.postFiles', 'postFiles')
+            .leftJoinAndSelect('post.postComments', 'comments')
+            .leftJoinAndSelect('comments.commentReplys', 'commentReplys')
+            .where('post.postId = :postId', { postId })
+            .getOne();
+
+            console.log(post);
+            
 
         return post;
     };

@@ -4,11 +4,15 @@ import { PatchPostDto } from '@dtos/posts/patch.post.dto';
 import { PostPostDto } from '@dtos/posts/post.post.dto';
 import { SpacePostParamDto } from '@dtos/posts/space.post.parma.dto';
 import { SpaceParamDto } from '@dtos/spaces/space.param.dto';
+import { Comment } from '@entities/post.comment.entity';
+import { CommentReply } from '@entities/post.comment.reply.entity';
 import { Post } from '@entities/post.entity';
+import { PostFile } from '@entities/post.file.entity';
 import { ECustomExceptionCode } from '@models/enums/e.exception.code';
 import { IPostFileList } from '@models/interfaces/i.post';
 import { ISpaceUserRelation } from '@models/interfaces/i.space.return';
 import { IUser } from '@models/interfaces/i.user';
+import { TRole, TRoleLevel } from '@models/types/t.role';
 import { Injectable } from '@nestjs/common';
 import { DayjsProvider } from '@providers/dayjs.provider';
 import { S3Provider } from '@providers/s3.provider';
@@ -540,7 +544,10 @@ export class PostService {
     ) {
 
         const { spaceId, postId } = param;
-        const { userId, spaceRole } = userSpaceRelation;
+        const { 
+            userId : viewerUserId, 
+            spaceRole 
+        } = userSpaceRelation;
         const { roleLevel } = spaceRole;
 
         const post = await this.postRepo.getPostRelationByPostId(postId);
@@ -556,20 +563,19 @@ export class PostService {
             postCategory,
             postContents,
             postFiles,
-            isAnonymous
+            isAnonymous,
+            postComments,
+            userId: postUserId
         } = post;
 
-        const postFileList = postFiles.length > 0 ? await Promise.all(postFiles.map(async (file, i) => {
+        const postFileList = await this.getFilesUrlList(
+            postFiles,
+            post.userId,
+            spaceId,
+            postId
+        );
 
-            const { postFileName } = file;
-
-            return {
-                getPresignedUrl: await this.s3.getPresignedUrl(`${userId}/${spaceId}/${postId}/${postFileName}`),
-                idx: i + 1
-            }
-        })) : [];
-
-        const user = await this.userRepo.getUserById(userId);
+        const user = await this.userRepo.getUserById(viewerUserId);
         if (!user) {
             throw new CustomException(
                 "존재하지 않는 회원",
@@ -579,17 +585,17 @@ export class PostService {
         };
         const { email, firstName, lastName, profileImage } = user;
 
-        let showUser = true;
-        if (isAnonymous) {
-
-            if (post.userId !== userId && roleLevel === 'joiner') {
-                showUser = false;
-            }
-        };
+        let showAnonymous = this.showAnonymous(isAnonymous, post.userId, viewerUserId, roleLevel);
 
         const userImage = profileImage ? 
-            await this.s3.getPresignedUrl(`${userId}/${spaceId}/${profileImage}`) : 
-            await this.s3.getPresignedUrl(`defaultImage.png`)
+            await this.s3.getPresignedUrl(`${postUserId}/${spaceId}/${profileImage}`) : 
+            await this.s3.getPresignedUrl(`defaultImage.png`);
+
+        const commentList = await this.setCommentAnonymous(
+            postComments,
+            viewerUserId,
+            roleLevel
+        );
 
         return {
             postName,
@@ -597,15 +603,14 @@ export class PostService {
             postContents,
             postId,
             postFiles: postFileList,
-            userId: showUser ? post.userId : 0,
-            name: showUser ? lastName + firstName : '',
-            email: showUser ? email : '',
-            profileImage: showUser ?
+            userId: showAnonymous ? post.userId : 0,
+            name: showAnonymous ? lastName + firstName : '',
+            email: showAnonymous ? email : '',
+            profileImage: showAnonymous ?
                 userImage :
-                await this.s3.getPresignedUrl(`defaultImage.png`)
+                await this.s3.getPresignedUrl(`defaultImage.png`),
+            commentList 
         };
-
-
 
     };
 
@@ -652,6 +657,122 @@ export class PostService {
                     };
 
                 }));
+
+    };
+
+    private async getFilesUrlList(
+        postFiles: PostFile[],
+        userId: number,
+        spaceId: number,
+        postId: number
+    ){
+
+        const postFileList = postFiles.length > 0 ? await Promise.all(postFiles.map(async (file, i) => {
+
+            const { postFileName } = file;
+
+            return {
+                getPresignedUrl: await this.s3.getPresignedUrl(`${userId}/${spaceId}/${postId}/${postFileName}`),
+                idx: i + 1
+            }
+        })) : [];
+
+        return postFileList;
+    };
+
+    async setReplyAnonymous(
+        commentReplys: CommentReply[],
+        viewerUserId: number,
+        viewerRoleLevel: TRoleLevel
+    ) {
+        return await Promise.all(commentReplys.map(
+            async (reply) => {
+
+                const {
+                    commentReply,
+                    replyId,
+                    userId: replyUserId,
+                    commentId,
+                    isAnonymous
+                } = reply;
+
+                const replyUser = await this.userRepo.getUserById(replyUserId);
+                const showAnonymous = this.showAnonymous(
+                    isAnonymous,
+                    replyUserId,
+                    viewerUserId,
+                    viewerRoleLevel
+                );
+
+                return {
+                    commentReply,
+                    replyId,
+                    userId: !showAnonymous && isAnonymous ? 0 : replyUserId,
+                    userName: !showAnonymous && isAnonymous ? `${replyUser?.lastName}${replyUser?.firstName}` : '',
+                    commentId
+                }
+            }));
+    };
+
+    async setCommentAnonymous(
+        postComments: Comment[],
+        viewerUserId: number,
+        viewerRoleLevel: TRoleLevel
+    ) {
+        return await Promise.all(postComments.map(
+            async (comm, i) => {
+
+                const {
+                    comment,
+                    commentId,
+                    commentReplys,
+                    userId: commentUserId,
+                    postId,
+                    isAnonymous
+                } = comm;
+
+                const commentUser = await this.userRepo.getUserById(commentUserId);
+
+                const showAnonymous = this.showAnonymous(
+                    isAnonymous,
+                    commentUserId,
+                    viewerUserId,
+                    viewerRoleLevel
+                );
+
+                const replys = await this.setReplyAnonymous(
+                    commentReplys,
+                    viewerUserId,
+                    viewerRoleLevel
+                );
+
+                return {
+                    comment,
+                    commentId,
+                    userId: !showAnonymous && isAnonymous ? 0 : commentUserId,
+                    userName: !showAnonymous && isAnonymous ? `${commentUser?.lastName}${commentUser?.firstName}` : '',
+                    postId,
+                    replys
+                }
+            }));
+    };
+
+    public showAnonymous (
+        isAnonymous: number,
+        targetUserId: number,
+        viewerUserId: number,
+        viewerRoleLevel: TRoleLevel
+    ){
+
+        let showAnonymous = true;
+        if (isAnonymous === 1) {
+
+            if (targetUserId !== viewerUserId && viewerRoleLevel === 'joiner') {
+                showAnonymous = false;
+            }
+        };
+
+        return showAnonymous;
 
     };
 

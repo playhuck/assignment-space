@@ -33,7 +33,7 @@ import { PostPostDto } from '@dtos/posts/post.post.dto';
 import { PostSpaceJoinDto } from '@dtos/spaces/post.space.join.dto';
 import { SpacePostParamDto } from '@dtos/posts/space.post.parma.dto';
 import { PatchPostDto } from '@dtos/posts/patch.post.dto';
-import { ISpaceUserRoleRelationSpaceAndSpaceRole } from '@models/interfaces/i.space.return';
+import { ISpaceUserRelation } from '@models/interfaces/i.space.return';
 import { Post } from '@entities/post.entity';
 
 jest.mock('@aws-sdk/s3-request-presigner', () => ({
@@ -690,7 +690,7 @@ describe('Space Test', () => {
 
     describe("게시글 삭제, DELETE /space/:spaceId/", () => {
 
-        let userRelation: ISpaceUserRoleRelationSpaceAndSpaceRole;
+        let userRelation: ISpaceUserRelation;
         let param: SpacePostParamDto;
 
         beforeAll(async () => {
@@ -701,7 +701,7 @@ describe('Space Test', () => {
                     roleLevel: 'admin',
                     spacePostAdminDelete: 0
                 }
-            } as ISpaceUserRoleRelationSpaceAndSpaceRole;
+            } as ISpaceUserRelation;
 
             param = {
                 spaceId: targetSpaceId,

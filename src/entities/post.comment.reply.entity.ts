@@ -19,7 +19,7 @@ export class CommentReply extends CustomBaseEntity {
     replyId!: number;
 
     @Column({
-        name: 'post_comment_id',
+        name: 'comment_id',
         type: 'int'
     })
     commentId!: number;
@@ -57,7 +57,7 @@ export class CommentReply extends CustomBaseEntity {
     user!: User;
 
     @ManyToOne(() => Comment, comment => comment.commentReplys)
-    @JoinColumn({ name: 'post_comment_id' })
+    @JoinColumn({ name: 'comment_id' })
     comment!: Comment;
 
 };

@@ -26,7 +26,7 @@ export class PostFile extends CustomBaseEntity {
     postId!: number;
 
     @Column({
-        name: 'post_name',
+        name: 'post_file_name',
         type: 'varchar',
         length: 128,
         nullable: false
