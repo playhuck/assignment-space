@@ -12,7 +12,7 @@ import { CustomBaseEntity } from './base.entity';
 import { Space } from './space.entity';
 import { PostFile } from './post.file.entity';
 import { TPostCategory } from '@models/types/t.post';
-import { PostComment } from './post.comment.entity';
+import { Comment } from './post.comment.entity';
 
 @Entity('post')
 export class Post extends CustomBaseEntity {
@@ -88,10 +88,10 @@ export class Post extends CustomBaseEntity {
     })
     postFiles!: PostFile[];
 
-    @OneToMany(() => PostComment, (comment) => comment.post, {
+    @OneToMany(() => Comment, (comment) => comment.post, {
         onDelete: 'CASCADE',
         cascade: true
     })
-    postComments!: PostComment[];
+    postComments!: Comment[];
 
 };

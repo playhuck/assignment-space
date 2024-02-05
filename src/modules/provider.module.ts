@@ -13,6 +13,8 @@ import { LoggerUtil } from '@utils/logger.util';
 
 import { SpaceRepository } from '@repositories/space.repository';
 import { UserRepository } from '@repositories/user.repository';
+import { PostRepository } from '@repositories/post.repository';
+import { CommentRepository } from '@repositories/comment.repository';
 
 import { Space } from '@entities/space.entity';
 import { SpaceRoleCode } from '@entities/space.role.code.entity';
@@ -21,7 +23,8 @@ import { SpaceUserRole } from '@entities/space.user.role.entity';
 import { User } from '@entities/user.entity';
 import { Post } from '@entities/post.entity';
 import { PostFile } from '@entities/post.file.entity';
-import { PostRepository } from '@repositories/post.repository';
+import { CommentReply } from '@entities/post.comment.reply.entity';
+import { Comment } from '@entities/post.comment.entity';
 
 @Global()
 @Module({
@@ -35,7 +38,10 @@ import { PostRepository } from '@repositories/post.repository';
             SpaceRoleCode,
             
             Post,
-            PostFile
+            PostFile,
+
+            Comment,
+            CommentReply
         ])
     ],
     providers: [
@@ -52,7 +58,8 @@ import { PostRepository } from '@repositories/post.repository';
 
         UserRepository,
         SpaceRepository,
-        PostRepository
+        PostRepository,
+        CommentRepository
     ],
     exports: [
         LoggerUtil,
@@ -68,7 +75,8 @@ import { PostRepository } from '@repositories/post.repository';
 
         UserRepository,
         SpaceRepository,
-        PostRepository
+        PostRepository,
+        CommentRepository
     ]
 })
 export class ProvidersModule { }

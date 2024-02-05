@@ -21,7 +21,7 @@ import { SpacePostParamDto } from '@dtos/posts/space.post.parma.dto';
 import { PatchPostDto } from '@dtos/posts/patch.post.dto';
 import { SpacePostGuard } from '@common/guards/space.post.guard';
 import { UserRelation } from '@common/decorators/user.relation.decorator';
-import { ISpaceUserRoleRelationSpaceAndSpaceRole } from '@models/interfaces/i.space.return';
+import { ISpaceUserRelation } from '@models/interfaces/i.space.return';
 import { PageQueryDto } from '@dtos/page.query.dto';
 
 @UseGuards(SpacePostGuard)
@@ -99,7 +99,7 @@ export class PostController {
 
     @Delete('/:postId')
     async postDelete(
-        @UserRelation() userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        @UserRelation() userSpaceRelation: ISpaceUserRelation,
         @Param() param: SpacePostParamDto
     ) {
 
@@ -111,7 +111,7 @@ export class PostController {
 
     @Get('/list')
     async postList(
-        @UserRelation() userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        @UserRelation() userSpaceRelation: ISpaceUserRelation,
         @Param() param: SpaceParamDto,
         @Query() query: PageQueryDto
     ) {
@@ -127,7 +127,7 @@ export class PostController {
 
     @Get('/:postId')
     async getPost(
-        @UserRelation() userRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        @UserRelation() userRelation: ISpaceUserRelation,
         @Param() param: SpacePostParamDto
     ) {
 

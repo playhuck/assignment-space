@@ -14,7 +14,7 @@ interface ISpaceUserRoleRelationSpaceRole extends TOnlySpaceUserRole {
     spaceRole: SpaceRole
 };
 
-interface ISpaceUserRoleRelationSpaceAndSpaceRole extends TOnlySpaceUserRole {
+interface ISpaceUserRelation extends TOnlySpaceUserRole {
     spaceRole: SpaceRole;
     space: Space
 };
@@ -44,7 +44,7 @@ export {
     IOnlySpaceRoleCode,
     IOnlySpaceUserRole,
     ISpaceUserRoleRelationSpaceRole,
-    ISpaceUserRoleRelationSpaceAndSpaceRole,
+    ISpaceUserRelation,
 
     ISpaceRelation
 }

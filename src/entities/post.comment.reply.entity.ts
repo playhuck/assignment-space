@@ -7,16 +7,16 @@ import {
 } from 'typeorm';
 import { CustomBaseEntity } from './base.entity';
 import { User } from './user.entity';
-import { PostComment } from './post.comment.entity';
+import { Comment } from './post.comment.entity';
 
 @Entity('post_comment_reply')
-export class PostCommentReply extends CustomBaseEntity {
+export class CommentReply extends CustomBaseEntity {
 
     @PrimaryGeneratedColumn({
         name: 'post_comment_reply_id',
         type: 'int'
     })
-    commentReplyId!: number;
+    replyId!: number;
 
     @Column({
         name: 'post_comment_id',
@@ -32,11 +32,18 @@ export class PostCommentReply extends CustomBaseEntity {
     userId!: number;
 
     @Column({
-        name: 'post_comment',
-        type: 'int',
+        name: 'post_comment_reply',
+        type: 'varchar',
+        length: 255,
         nullable: false
     })
-    postCommentReply!: number;
+    commentReply!: string;
+
+    @Column({
+        name: 'is_anonymous',
+        type: 'tinyint'
+    })
+    isAnonymous!: number;
 
     @Column({
         name: 'updated_at',
@@ -49,8 +56,8 @@ export class PostCommentReply extends CustomBaseEntity {
     @JoinColumn({ name: 'user_id' })
     user!: User;
 
-    @ManyToOne(() => PostComment, comment => comment.postCommentReplys)
+    @ManyToOne(() => Comment, comment => comment.commentReplys)
     @JoinColumn({ name: 'post_comment_id' })
-    comment!: PostComment;
+    comment!: Comment;
 
 };

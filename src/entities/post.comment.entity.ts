@@ -9,10 +9,10 @@ import {
 import { CustomBaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { Post } from './post.entity';
-import { PostCommentReply } from './post.comment.reply.entity';
+import { CommentReply } from './post.comment.reply.entity';
 
 @Entity('post_comment')
-export class PostComment extends CustomBaseEntity {
+export class Comment extends CustomBaseEntity {
 
     @PrimaryGeneratedColumn({
         name: 'post_comment_id',
@@ -35,10 +35,17 @@ export class PostComment extends CustomBaseEntity {
 
     @Column({
         name: 'post_comment',
-        type: 'int',
+        type: 'varchar',
+        length: 255,
         nullable: false
     })
-    postComment!: number;
+    comment!: string;
+
+    @Column({
+        name: 'is_anonymous',
+        type: 'tinyint'
+    })
+    isAnonymous!: number;
 
     @Column({
         name: 'updated_at',
@@ -55,10 +62,10 @@ export class PostComment extends CustomBaseEntity {
     @JoinColumn({ name: 'post_id' })
     post!: Post;
 
-    @OneToMany(() => PostCommentReply, (commentReply) => commentReply.comment, {
+    @OneToMany(() => CommentReply, (commentReply) => commentReply.comment, {
         onDelete: 'CASCADE',
         cascade: true
     })
-    postCommentReplys!: PostCommentReply[];
+    commentReplys!: CommentReply[];
 
 };

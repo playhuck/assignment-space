@@ -7,7 +7,7 @@ import { SpaceParamDto } from '@dtos/spaces/space.param.dto';
 import { Post } from '@entities/post.entity';
 import { ECustomExceptionCode } from '@models/enums/e.exception.code';
 import { IPostFileList } from '@models/interfaces/i.post';
-import { ISpaceUserRoleRelationSpaceAndSpaceRole } from '@models/interfaces/i.space.return';
+import { ISpaceUserRelation } from '@models/interfaces/i.space.return';
 import { IUser } from '@models/interfaces/i.user';
 import { Injectable } from '@nestjs/common';
 import { DayjsProvider } from '@providers/dayjs.provider';
@@ -420,7 +420,7 @@ export class PostService {
     };
 
     async postDelete(
-        userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        userSpaceRelation: ISpaceUserRelation,
         param: SpacePostParamDto
     ) {
 
@@ -488,7 +488,7 @@ export class PostService {
     };
 
     async postList(
-        userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        userSpaceRelation: ISpaceUserRelation,
         param: SpaceParamDto,
         query: PageQueryDto
     ): Promise<
@@ -535,7 +535,7 @@ export class PostService {
     };
 
     async getPost(
-        userSpaceRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        userSpaceRelation: ISpaceUserRelation,
         param: SpacePostParamDto
     ) {
 
@@ -656,7 +656,7 @@ export class PostService {
     };
 
     async postComment(
-        userRelation: ISpaceUserRoleRelationSpaceAndSpaceRole,
+        userRelation: ISpaceUserRelation,
         param: SpacePostParamDto
     ){
 

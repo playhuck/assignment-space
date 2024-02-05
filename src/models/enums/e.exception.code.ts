@@ -3,14 +3,16 @@ export const NOT_FOUND_URL_STATUS_CODE = 499;
 export enum ECustomExceptionCode {
 
   /** 중복된 아이디입니다. */ 'USER-001' = 'USER-001',
-  /** 존재하지 않는 유저입니다. */ 'USER-002' = 'USER-002',
+  /** 존재하지 않는 유저 */ 'USER-002' = 'USER-002',
   /** 중복로그인은 허용되지 않습니다. */ 'USER-003' = 'USER-003',
 
-  /** 공간을 찾을 수 없습니다. */ 'SPACE-001' = 'SPACE-001',
+  /** 공간을 찾을 수 없음 */ 'SPACE-001' = 'SPACE-001',
   /** 유효하지 않은 코드 */ 'SPACE-002' = 'SPACE-002',
 
   /** 게시글을 찾을 수 없음 */ 'POST-001' = 'POST-001',
   /** 게시글 카테고리 오류 */ 'POST-002' = 'POST-002',
+
+  /** 댓글을 찾을 수 없음 */ 'COMMENT-001' = 'COMMENT-001',
 
   /** 소유자만 이용할 수 있습니다. */ 'ROLE-001' = 'ROLE-001',
   /** 누군가 사용중인 역할[삭제불가]. */ 'ROLE-002' = 'ROLE-002',
@@ -19,6 +21,7 @@ export enum ECustomExceptionCode {
   /** 익명 작성 규칙 위반 */ 'ROLE-005' = 'ROLE-005',
   /** 공지사항 작성 규칙 위반 */ 'ROLE-006' = 'ROLE-006',
   /** [게시물 포함]삭제 규칙 위반 */ 'ROLE-007' = 'ROLE-007',
+  /** [댓글]삭제 규칙 위반 */ 'ROLE-008' = 'ROLE-008',
 
   /** 비밀번호 불일치 */ 'INCORECT-PWD' = 'INCORECT-PWD',
   /** DB 비밀번호 불일치 */ 'INCORECT-DB-PWD' = 'INCORECT-DB-PWD',

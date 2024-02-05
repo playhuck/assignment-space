@@ -17,7 +17,7 @@ import {
     IOnlySpaceRoleCode,
     IOnlySpaceUserRole,
     ISpaceRelation,
-    ISpaceUserRoleRelationSpaceAndSpaceRole,
+    ISpaceUserRelation,
     ISpaceUserRoleRelationSpaceRole
 } from "@models/interfaces/i.space.return";
 
@@ -189,7 +189,7 @@ export class SpaceRepository {
         return codeEntity as T | null;
     };
 
-    async getUserSpaceRelation<T extends ISpaceUserRoleRelationSpaceAndSpaceRole>(
+    async getUserSpaceRelation<T extends ISpaceUserRelation>(
         spaceId: number,
         userId: number
     ): Promise<T | null> {
