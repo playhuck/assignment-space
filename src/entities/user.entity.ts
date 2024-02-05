@@ -13,6 +13,8 @@ import { SpaceUserRole } from './space.user.role.entity';
 import { Post } from './post.entity';
 import { Comment } from './post.comment.entity';
 import { CommentReply } from './post.comment.reply.entity';
+import { SpaceUserAlarmSettings } from './space.user.alarm.settings.entity';
+import { SpaceUserAlarm } from './space.user.alarm.entity';
 
 @Entity('user')
 @Unique(['email'])
@@ -97,4 +99,17 @@ export class User extends CustomBaseEntity {
         cascade: true
     })
     postCommentReplys!: CommentReply[];
+
+    @OneToMany(() => SpaceUserAlarmSettings, (alarmSettings) => alarmSettings.user, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    spaecUserAlarmSettings!: SpaceUserAlarmSettings[];
+
+    @OneToMany(() => SpaceUserAlarm, (alarm) => alarm.user, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    spaecUserAlarms!: SpaceUserAlarm[];
+
 }

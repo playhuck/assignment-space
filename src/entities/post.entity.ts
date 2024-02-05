@@ -13,6 +13,7 @@ import { Space } from './space.entity';
 import { PostFile } from './post.file.entity';
 import { TPostCategory } from '@models/types/t.post';
 import { Comment } from './post.comment.entity';
+import { SpaceUserAlarm } from './space.user.alarm.entity';
 
 @Entity('post')
 export class Post extends CustomBaseEntity {
@@ -93,5 +94,11 @@ export class Post extends CustomBaseEntity {
         cascade: true
     })
     postComments!: Comment[];
+
+    @OneToMany(() => SpaceUserAlarm, (alarm) => alarm.post, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    spaceUserAlarms!: SpaceUserAlarm[];
 
 };

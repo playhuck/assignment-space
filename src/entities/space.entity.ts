@@ -5,6 +5,8 @@ import { SpaceRole } from './space.role.entity';
 import { SpaceUserRole } from './space.user.role.entity';
 import { SpaceRoleCode } from './space.role.code.entity';
 import { Post } from './post.entity';
+import { SpaceUserAlarmSettings } from './space.user.alarm.settings.entity';
+import { SpaceUserAlarm } from './space.user.alarm.entity';
 
 @Entity('space')
 export class Space extends CustomBaseEntity {
@@ -63,5 +65,17 @@ export class Space extends CustomBaseEntity {
         cascade: true
     })
     posts!: Post[];
+
+    @OneToMany(() => SpaceUserAlarm, (alarm) => alarm.space, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    spaceUserAlarms!: SpaceUserAlarm[];
+
+    @OneToMany(() => SpaceUserAlarmSettings, (alarmSettings) => alarmSettings.space, {
+        onDelete: 'CASCADE',
+        cascade: true
+    })
+    spaceUserAlarmSettings!: SpaceUserAlarmSettings[];
 
 }
