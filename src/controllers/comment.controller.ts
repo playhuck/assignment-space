@@ -23,6 +23,9 @@ import { SpacePostParamDto } from '@dtos/posts/space.post.parma.dto';
 import { ISpaceUserRelation } from '@models/interfaces/i.space.return';
 import { IUser } from '@models/interfaces/i.user';
 import { UserRelation } from '@common/decorators/user.relation.decorator';
+import { PostReplyDto } from '@dtos/comments/post.reply.dto';
+import { ReplyParamDto } from '@dtos/comments/reply.param.dto';
+import { PatchReplyDto } from '@dtos/comments/patch.reply.dto';
 
 @UseGuards(SpacePostGuard)
 @UseGuards(JwtUserGuard)
@@ -72,12 +75,44 @@ export class CommentController {
     };
 
     @Post('/:commentId')
-    async postCommentReply(){};
+    async postCommentReply(
+        @User() user: IUser,
+        @Param() param: CommentParamDto,
+        @Body() body: PostReplyDto
+    ){
+
+        void await this.service.postReplyComment(
+            user,
+            param,
+            body
+        );
+    };
 
     @Patch('/:commentId/:replyId')
-    async updateCommentReply(){};
+    async updateCommentReply(
+        @User() user: IUser,
+        @Param() param: ReplyParamDto,
+        @Body() body: PatchReplyDto
+    ){
+
+        void await this.service.updateReplyComment(
+            user,
+            param,
+            body
+        )
+    };
 
     @Delete('/:commentId/:replyId')
-    async deleteCommentReply(){};
+    async deleteCommentReply(
+        @UserRelation() userRelation: ISpaceUserRelation,
+        @Param() param: ReplyParamDto
+    ){
+
+        void await this.service.deleteReplyComment(
+            userRelation,
+            param
+        );
+        
+    };
 
 }
