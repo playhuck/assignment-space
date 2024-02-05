@@ -56,8 +56,29 @@ npm ci
 ---
 
 1. Production
-1. Development
-1. test
+```jsx
+npm run start 
+```
+
+- Production 단계를 의미합니다.
+- **classum_prod** db를 사용합니다.
+
+2. Development
+```jsx
+npm run dev 
+```
+
+- Development 단계를 의미합니다.
+- classum_dev db를 사용합니다.
+- Dev모드의 경우, API가 호출 될 때마다 아래와 같은 log가 기록됩니다.
+
+3. test
+```jsx
+npm run test
+```
+
+- test mode를 의미합니다.
+- classum_tset db를 사용합니다.
 
 앱을 실행하기 위해선, 같이 알집파일에 압축된 각 환경변수와 secrets 폴더가 반드시 필요합니다.
 
