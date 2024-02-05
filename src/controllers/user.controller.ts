@@ -4,7 +4,8 @@ import {
     Get, 
     Param, 
     Patch, 
-    Query 
+    Query, 
+    UseGuards
 } from '@nestjs/common';
 
 import { UserService } from '@services/user.service';
@@ -18,11 +19,43 @@ import { PatchUserPasswordDto } from '@dtos/users/patch.user.password.dto';
 import { UserParamDto } from '@dtos/users/user.param.dto';
 
 import { IUser } from '@models/interfaces/i.user';
+import { JwtUserGuard } from '@common/guards/jwt.user.guard';
 
+@UseGuards(JwtUserGuard)
 @Controller('user')
 export class UserController {
 
     constructor(private readonly service: UserService) { };
+
+    @Get('/post-list')
+    async getUserPostList(
+        @User() user: IUser,
+        @Query() query: PageQueryDto
+    ) {
+
+        const postList = await this.service.getUserPostList(
+            user,
+            query
+        );
+
+        return { postList };
+
+    };
+
+    @Get('/comment-list')
+    async getUserCommentList(
+        @User() user: IUser,
+        @Query() query: PageQueryDto
+    ) {
+
+        const commentList = await this.service.getUserCommentList(
+            user,
+            query
+        );
+
+        return { commentList };
+
+    };
 
     @Get('/:userId')
     async getProfile(
@@ -38,37 +71,7 @@ export class UserController {
 
     };
 
-    @Get('/:userId/post-list')
-    async getUserPostList(
-        @User() user: IUser,
-        @Query() query: PageQueryDto
-    ) {
-
-        const postList = await this.service.getUserPostList(
-            user,
-            query
-        );
-
-        return { postList };
-
-    };
-
-    @Get('/:userId/comment-list')
-    async getUserCommentList(
-        @User() user: IUser,
-        @Query() query: PageQueryDto
-    ) {
-
-        const commentList = await this.service.getUserCommentList(
-            user,
-            query
-        );
-
-        return { commentList };
-
-    };
-
-    @Patch('/:userId/name')
+    @Patch('/name')
     async updateUserName(
         @User() user: IUser,
         @Body() body: PatchUserNameDto
@@ -80,7 +83,7 @@ export class UserController {
         );
     };
 
-    @Patch('/:userId/password')
+    @Patch('/password')
     async updateUserPassword(
         @User() user: IUser,
         @Body() body: PatchUserPasswordDto
@@ -92,7 +95,7 @@ export class UserController {
         );
     };
 
-    @Patch('/:userId/image')
+    @Patch('/image')
     async updateUserProfileImage(
         @User() user: IUser,
         @Body() body: PatchUserProfileImageDto

@@ -132,6 +132,7 @@ export class UserService {
         const skip = this.util.skipedItem(page, take);
 
         const commentList = await this.commentRepo.getCommentListByUserId(
+            await this.db.dataSourceProperty(),
             userId,
             skip,
             take,
@@ -259,7 +260,7 @@ export class UserService {
                 const updateUserProfileImage = await this.userRepo.updateUserProfileImage(
                     entityManager,
                     userId,
-                    profileImage
+                    `${userId}/${profileImage}`
                 );
                 if (updateUserProfileImage.affected !== 1) {
                     throw new CustomException(

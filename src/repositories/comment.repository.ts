@@ -6,7 +6,7 @@ import { IOnlyComment, IOnlyReply } from "@models/interfaces/i.comment";
 import { TSortCreatedAt } from "@models/types/t.common";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { EntityManager, Repository } from "typeorm";
+import { DataSource, EntityManager, Repository } from "typeorm";
 
 @Injectable()
 export class CommentRepository {
@@ -76,21 +76,26 @@ export class CommentRepository {
     };
 
     async getCommentListByUserId(
+        dataSource: DataSource,
         userId: number,
         skip: number,
         take: number,
         sortedCreatedAt: TSortCreatedAt
     ) {
 
-        const commentList = await this.commentRepo
-            .createQueryBuilder('c')
-            .leftJoinAndSelect('c.replies', 'r')
-            .where('c.userId = :userId', { userId })
-            .orderBy('c.createdAt', sortedCreatedAt)
-            .addOrderBy('r.createdAt', sortedCreatedAt)
-            .skip(skip)
-            .take(take)
-            .getMany();
+        const query = `
+            SELECT 
+                post_comment_id as commentId, user_id as userId, post_comment as comment, created_at as createdAt 
+            FROM post_comment WHERE user_id = ?
+            UNION ALL
+            SELECT post_comment_reply_id as commentId, user_id as userId, post_comment_reply as comment, created_at as createdAt 
+            FROM post_comment_reply 
+            WHERE user_id = ?
+            ORDER BY createdAt ${sortedCreatedAt}
+            LIMIT ? 
+            OFFSET ?
+       `
+       const commentList = await dataSource.query(query, [userId, userId, take, skip])
 
         return commentList;
 
