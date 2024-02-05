@@ -713,7 +713,6 @@ export class PostService {
 
                 const postFileList = await this.getFilesUrlList(
                     postFiles,
-                    post.userId,
                     spaceId,
                     postId
                 );
@@ -834,17 +833,19 @@ export class PostService {
 
     private async getFilesUrlList(
         postFiles: PostFile[],
-        userId: number,
         spaceId: number,
         postId: number
     ) {
-
+        
         const postFileList = postFiles.length > 0 ? await Promise.all(postFiles.map(async (file, i) => {
 
             const { postFileName } = file;
 
+            console.log(`${spaceId}/${postId}/${postFileName}`);
+            
+
             return {
-                getPresignedUrl: await this.s3.getPresignedUrl(`${userId}/${spaceId}/${postId}/${postFileName}`),
+                getPresignedUrl: await this.s3.getPresignedUrl(`${spaceId}/${postId}/${postFileName}`),
                 idx: i + 1
             }
         })) : [];

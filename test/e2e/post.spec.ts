@@ -302,6 +302,8 @@ describe('Space Test', () => {
                     true,
                     'notice'
                 );
+                console.log(body);
+                
                 
             });
 

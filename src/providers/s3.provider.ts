@@ -63,7 +63,10 @@ export class S3Provider {
     ) {
         const { BUCKET_NAME } = this.S3_ENV;
 
-        const key = `${userId}/${spaceId}/${postId}/${fileName}`;
+        const key = `${spaceId}/${postId}/${fileName}`;
+
+        console.log(key);
+        
 
         const contentType = fileExtension === 'image' ?
             'image/*' : fileExtension === 'file' ?
