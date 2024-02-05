@@ -66,6 +66,29 @@ export class PostRepository {
         return post;
     };
 
+    async getPostListByUserId(
+        userId: number,
+        skip: number,
+        take: number,
+        sortedCreatedAt: TSortCreatedAt
+    ){
+
+        const postList = await this.postRepo.find({
+            where: {
+                userId
+            },
+            order: {
+                createdAt: sortedCreatedAt
+            },
+            skip,
+            take
+        });
+
+        return postList
+
+        return postList;
+    }
+
     async getPostFileListByPostId(
         postId: number
     ){

@@ -78,6 +78,24 @@ export class S3Provider {
         });
     };
 
+    async putPresignedUrlForUser(
+        userId: number,
+        fileName: string
+    ) {
+        const { BUCKET_NAME } = this.S3_ENV;
+
+        const key = `${userId}/${fileName}`;
+
+        const contentType = 'image/*'
+                
+        const command = new PutObjectCommand({ Bucket: BUCKET_NAME, Key: key, ContentType: contentType });
+
+        return await getSignedUrl(
+            this.s3Client as any, command as any, {
+            expiresIn: 3600 * 100
+        });
+    };
+
     async getPresignedUrl(
         Key: string
     ) {

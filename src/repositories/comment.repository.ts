@@ -3,6 +3,7 @@ import { ReplyParamDto } from "@dtos/comments/reply.param.dto";
 import { Comment } from "@entities/post.comment.entity";
 import { CommentReply } from "@entities/post.comment.reply.entity";
 import { IOnlyComment, IOnlyReply } from "@models/interfaces/i.comment";
+import { TSortCreatedAt } from "@models/types/t.common";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
@@ -40,7 +41,7 @@ export class CommentRepository {
 
     async getCommentByPostId(
         postId: number
-    ){
+    ) {
 
         const commentList = await this.commentRepo.find({
             where: {
@@ -58,10 +59,10 @@ export class CommentRepository {
         replyCount: number,
         dupCommentCount: number,
         dupReplyCount: number
-    }>{
+    }> {
 
         const commentList = await this.getCommentByPostId(postId);
-        if(commentList.length === 0){
+        if (commentList.length === 0) {
             return {
                 commentCount: 0,
                 replyCount: 0,
@@ -73,6 +74,27 @@ export class CommentRepository {
         return 'd' as any
 
     };
+
+    async getCommentListByUserId(
+        userId: number,
+        skip: number,
+        take: number,
+        sortedCreatedAt: TSortCreatedAt
+    ) {
+
+        const commentList = await this.commentRepo
+            .createQueryBuilder('c')
+            .leftJoinAndSelect('c.replies', 'r')
+            .where('c.userId = :userId', { userId })
+            .orderBy('c.createdAt', sortedCreatedAt)
+            .addOrderBy('r.createdAt', sortedCreatedAt)
+            .skip(skip)
+            .take(take)
+            .getMany();
+
+        return commentList;
+
+    }
 
     async insertComment(
         entityManager: EntityManager,
@@ -180,7 +202,7 @@ export class CommentRepository {
         commentReply: string,
         isAnonymous: boolean,
         createdAt: string
-    ){
+    ) {
 
         const insertReply = await entityManager.insert(CommentReply, {
             userId,
@@ -222,7 +244,7 @@ export class CommentRepository {
     async deleteReply(
         entityManager: EntityManager,
         replyId: number
-    ){
+    ) {
 
         const deleteReply = await entityManager.softDelete(CommentReply, {
             replyId

@@ -50,6 +50,19 @@ export class UserRepository {
         return user;
     };
 
+    async getUserPassword(userId: number): Promise<string> {
+
+        const user = await this.userRepo
+            .createQueryBuilder()
+            .select([
+                'password'
+            ])
+            .where(`user_id =:userId`, { userId })
+            .getRawOne();
+
+        return user?.password
+    };
+
     async insertUserEntity(
         entityManager: EntityManager,
         body: PostSignUpDto,
@@ -88,6 +101,56 @@ export class UserRepository {
         return update;
     };
 
+    async updateUserName(
+        entityManager: EntityManager,
+        userId: number,
+        firstName: string,
+        lastName: string
+    ) {
+
+        const updateUserName = await entityManager.update(User, {
+            userId
+        }, {
+            firstName,
+            lastName
+        });
+
+        return updateUserName;
+
+    };
+
+    async updatePassword(
+        entityManager: EntityManager,
+        userId: number,
+        hashedPassword: string
+    ){
+
+        const updatePassword = await entityManager.update(
+            User, {
+                userId
+            }, {
+                password: hashedPassword
+            }
+        );
+
+        return updatePassword;
+    };
+
+    async updateUserProfileImage(
+        entityManager: EntityManager,
+        userId: number,
+        profileImage: string
+    ) {
+
+        const updateUserProfileImage = await entityManager.update(User, {
+            userId
+        }, {
+            profileImage
+        });
+
+        return updateUserProfileImage;
+    }
+
     async clearUserRefresh(
         entityManager: EntityManager,
         userId: number
@@ -99,5 +162,5 @@ export class UserRepository {
         });
 
         return update;
-    }
+    };
 }
