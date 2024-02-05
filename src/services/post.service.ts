@@ -9,13 +9,15 @@ import { CommentReply } from '@entities/post.comment.reply.entity';
 import { Post } from '@entities/post.entity';
 import { PostFile } from '@entities/post.file.entity';
 import { ECustomExceptionCode } from '@models/enums/e.exception.code';
-import { IPostFileList } from '@models/interfaces/i.post';
+import { IPostFileList, IPostList } from '@models/interfaces/i.post';
 import { ISpaceUserRelation } from '@models/interfaces/i.space.return';
 import { IUser } from '@models/interfaces/i.user';
+import { TPostCategory } from '@models/types/t.post';
 import { TRole, TRoleLevel } from '@models/types/t.role';
 import { Injectable } from '@nestjs/common';
 import { DayjsProvider } from '@providers/dayjs.provider';
 import { S3Provider } from '@providers/s3.provider';
+import { CommentRepository } from '@repositories/comment.repository';
 import { PostRepository } from '@repositories/post.repository';
 import { SpaceRepository } from '@repositories/space.repository';
 import { UserRepository } from '@repositories/user.repository';
@@ -35,7 +37,8 @@ export class PostService {
 
         private readonly spaceRepo: SpaceRepository,
         private readonly postRepo: PostRepository,
-        private readonly userRepo: UserRepository
+        private readonly userRepo: UserRepository,
+        private readonly commentRepo: CommentRepository
     ) { };
 
     async postQuestion(
@@ -495,10 +498,10 @@ export class PostService {
         userSpaceRelation: ISpaceUserRelation,
         param: SpaceParamDto,
         query: PageQueryDto
-    ): Promise<
-        Array<Pick<
-            Post, 'createdAt' | 'isAnonymous' | 'postId' | 'postName' | 'userId' | 'postCategory'>>
-    > {
+    ): Promise<{
+        noticeList: IPostList[],
+        questionList: IPostList[]
+    }> {
 
         const { spaceId } = param;
         const { spaceRole } = userSpaceRelation;
@@ -518,12 +521,18 @@ export class PostService {
             sortCreated
         );
 
-        return await Promise.all(postList.map(async (post, i) => {
+        const postNotice: IPostList[] = [];
+        const postQuestion: IPostList[] = [];
+
+        await Promise.all(postList.map(async (post, i) => {
 
             const { isAnonymous, postName, postId, createdAt, postCategory } = post;
 
+            const counts = await this.getCommentCounts(postId);
+
             const userId = isAnonymous && roleLevel === 'joiner' ? 0 : post.userId;
-            return {
+
+            const postObject = {
                 isAnonymous,
                 postName,
                 postCategory,
@@ -532,9 +541,19 @@ export class PostService {
                 createdAt: this.dayjs.getDatetimeWithOffset(createdAt, 'YYYY-MM-DD HH:mm', {
                     value: -540,
                     unit: 'minute'
-                })
+                }),
+                counts
             }
+            return postCategory === 'notice' ? postNotice.push(postObject) : postQuestion.push(postObject);
         }));
+
+        const noticeList = await this.sortingPostList(postNotice);
+        const questionList = await this.sortingPostList(postQuestion); /** index 4까지 인기게시물 */
+
+        return {
+            noticeList,
+            questionList
+        }
 
     };
 
@@ -544,9 +563,9 @@ export class PostService {
     ) {
 
         const { spaceId, postId } = param;
-        const { 
-            userId : viewerUserId, 
-            spaceRole 
+        const {
+            userId: viewerUserId,
+            spaceRole
         } = userSpaceRelation;
         const { roleLevel } = spaceRole;
 
@@ -587,8 +606,8 @@ export class PostService {
 
         let showAnonymous = this.showAnonymous(isAnonymous, post.userId, viewerUserId, roleLevel);
 
-        const userImage = profileImage ? 
-            await this.s3.getPresignedUrl(`${postUserId}/${spaceId}/${profileImage}`) : 
+        const userImage = profileImage ?
+            await this.s3.getPresignedUrl(`${postUserId}/${spaceId}/${profileImage}`) :
             await this.s3.getPresignedUrl(`defaultImage.png`);
 
         const commentList = await this.setCommentAnonymous(
@@ -609,7 +628,7 @@ export class PostService {
             profileImage: showAnonymous ?
                 userImage :
                 await this.s3.getPresignedUrl(`defaultImage.png`),
-            commentList 
+            commentList
         };
 
     };
@@ -665,7 +684,7 @@ export class PostService {
         userId: number,
         spaceId: number,
         postId: number
-    ){
+    ) {
 
         const postFileList = postFiles.length > 0 ? await Promise.all(postFiles.map(async (file, i) => {
 
@@ -680,38 +699,51 @@ export class PostService {
         return postFileList;
     };
 
-    async setReplyAnonymous(
-        commentReplys: CommentReply[],
-        viewerUserId: number,
-        viewerRoleLevel: TRoleLevel
-    ) {
-        return await Promise.all(commentReplys.map(
-            async (reply) => {
+    private async getCommentCounts(
+        postId: number
+    ): Promise<{
+        commentCount: number,
+        dupCommentCount: number
+    }> {
 
-                const {
-                    commentReply,
-                    replyId,
-                    userId: replyUserId,
-                    commentId,
-                    isAnonymous
-                } = reply;
+        let counts = {
+            commentCount: 0,
+            replyCount: 0,
+            dupCommentCount: 0,
+            dupReplyCount: 0
+        }
+        const commentList = await this.commentRepo.getCommentByPostId(postId);
+        if (commentList.length === 0) {
+            return {
+                commentCount: 0,
+                dupCommentCount: 0
+            }
+        };
 
-                const replyUser = await this.userRepo.getUserById(replyUserId);
-                const showAnonymous = this.showAnonymous(
-                    isAnonymous,
-                    replyUserId,
-                    viewerUserId,
-                    viewerRoleLevel
-                );
+        const uniqueCommentUsers = new Set(commentList.map(comment => comment.userId));
+        counts.commentCount = uniqueCommentUsers.size;
+        counts.dupCommentCount = commentList.length
 
-                return {
-                    commentReply,
-                    replyId,
-                    userId: !showAnonymous && isAnonymous ? 0 : replyUserId,
-                    userName: !showAnonymous && isAnonymous ? `${replyUser?.lastName}${replyUser?.firstName}` : '',
-                    commentId
-                }
-            }));
+        await Promise.all(commentList.map(
+            async(comm, i) => {
+
+                const { commentId } = comm;
+
+                const getReplyList = await this.commentRepo.getReplyListByCommentId(commentId);
+
+                if(getReplyList.length === 0) return;
+
+                const uniqueReplyUsers = new Set(getReplyList.map(reply => reply.userId));
+                counts.replyCount += uniqueReplyUsers.size;
+                counts.dupReplyCount += getReplyList.length;
+
+        }));
+
+        return {
+            commentCount: counts.commentCount + counts.replyCount,
+            dupCommentCount: counts.dupCommentCount + counts.dupReplyCount
+        };
+
     };
 
     async setCommentAnonymous(
@@ -750,19 +782,88 @@ export class PostService {
                     comment,
                     commentId,
                     userId: !showAnonymous && isAnonymous ? 0 : commentUserId,
-                    userName: !showAnonymous && isAnonymous ? `${commentUser?.lastName}${commentUser?.firstName}` : '',
+                    userName: !showAnonymous && isAnonymous ? '' : `${commentUser?.lastName}${commentUser?.firstName}`,
                     postId,
                     replys
                 }
             }));
     };
 
-    public showAnonymous (
+    async setReplyAnonymous(
+        commentReplys: CommentReply[],
+        viewerUserId: number,
+        viewerRoleLevel: TRoleLevel
+    ) {
+        return await Promise.all(commentReplys.map(
+            async (reply) => {
+
+                const {
+                    commentReply,
+                    replyId,
+                    userId: replyUserId,
+                    commentId,
+                    isAnonymous
+                } = reply;
+
+                const replyUser = await this.userRepo.getUserById(replyUserId);
+                const showAnonymous = this.showAnonymous(
+                    isAnonymous,
+                    replyUserId,
+                    viewerUserId,
+                    viewerRoleLevel
+                );
+
+                return {
+                    commentReply,
+                    replyId,
+                    userId: !showAnonymous && isAnonymous ? 0 : replyUserId,
+                    userName: !showAnonymous && isAnonymous ? '' : `${replyUser?.lastName}${replyUser?.firstName}`,
+                    commentId
+                }
+            }));
+    };
+
+    async sortingPostList(sortingPostList: {
+        isAnonymous: number;
+        postName: string;
+        postCategory: TPostCategory;
+        postId: number;
+        userId: number;
+        createdAt: string;
+        counts: {
+            commentCount: number;
+            dupCommentCount: number;
+        };
+    }[]) {
+
+        return sortingPostList.sort((a, b) => {
+
+            if (a.postCategory === 'notice' && b.postCategory !== 'notice') {
+                return -1;
+            };
+
+            if (a.postCategory !== 'notice' && b.postCategory === 'notice') {
+                return 1;
+            }
+
+            if (a.counts.dupCommentCount !== b.counts.dupCommentCount) {
+                return b.counts.dupCommentCount - a.counts.dupCommentCount;
+            }
+
+            if (a.counts.commentCount !== b.counts.commentCount) {
+                return b.counts.commentCount - a.counts.commentCount;
+            }
+
+            return 0;
+        });
+    };
+
+    public showAnonymous(
         isAnonymous: number,
         targetUserId: number,
         viewerUserId: number,
         viewerRoleLevel: TRoleLevel
-    ){
+    ) {
 
         let showAnonymous = true;
         if (isAnonymous === 1) {
@@ -771,7 +872,7 @@ export class PostService {
                 showAnonymous = false;
             }
         };
-
+        
         return showAnonymous;
 
     };

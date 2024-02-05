@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { EntityManager, Repository } from "typeorm";
+import { EntityManager, Not, Repository } from "typeorm";
 
 import { Post } from "@entities/post.entity";
 import { PostFile } from "@entities/post.file.entity";
@@ -40,9 +40,6 @@ export class PostRepository {
             .leftJoinAndSelect('comments.commentReplys', 'commentReplys')
             .where('post.postId = :postId', { postId })
             .getOne();
-
-            console.log(post);
-            
 
         return post;
     };

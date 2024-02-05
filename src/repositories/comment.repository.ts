@@ -36,7 +36,43 @@ export class CommentRepository {
 
         return comment as T | null;
 
+    };
+
+    async getCommentByPostId(
+        postId: number
+    ){
+
+        const commentList = await this.commentRepo.find({
+            where: {
+                postId
+            }
+        });
+
+        return commentList;
     }
+
+    async getCommentCountByPostId(
+        postId: number
+    ): Promise<{
+        commentCount: number,
+        replyCount: number,
+        dupCommentCount: number,
+        dupReplyCount: number
+    }>{
+
+        const commentList = await this.getCommentByPostId(postId);
+        if(commentList.length === 0){
+            return {
+                commentCount: 0,
+                replyCount: 0,
+                dupCommentCount: 0,
+                dupReplyCount: 0
+            }
+        };
+
+        return 'd' as any
+
+    };
 
     async insertComment(
         entityManager: EntityManager,
@@ -123,6 +159,19 @@ export class CommentRepository {
 
         return reply as T | null;
     };
+
+    async getReplyListByCommentId(
+        commentId: number
+    ) {
+
+        const replyList = await this.replyRepo.find({
+            where: {
+                commentId
+            }
+        });
+
+        return replyList;
+    }
 
     async insertReply(
         entityManager: EntityManager,

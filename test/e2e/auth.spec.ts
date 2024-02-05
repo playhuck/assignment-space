@@ -17,8 +17,6 @@ import { PostSignUpDto } from '@dtos/auths/post.sign.up.dto';
 import { PostSignInDto } from '@dtos/auths/post.sign.in.dto';
 import { JwtProvider } from '@providers/jwt.provider';
 import { IAccessTokenPayload, IRefreshTokenPayload } from 'jsonwebtoken';
-import { Space } from '@entities/space.entity';
-import { SpaceRole } from '@entities/space.role.entity';
 
 describe('User Authentication Test', () => {
 

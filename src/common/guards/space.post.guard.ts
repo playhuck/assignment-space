@@ -37,7 +37,7 @@ export class SpacePostGuard implements CanActivate {
                 403
             )
         };
-
+        
         res['userSpaceRelation'] = getUserSpaceRelation;
 
         return true

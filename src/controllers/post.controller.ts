@@ -116,13 +116,13 @@ export class PostController {
         @Query() query: PageQueryDto
     ) {
 
-        const postList = await this.service.postList(
+        const posts = await this.service.postList(
             userSpaceRelation,
             param,
             query
         );
 
-        return { postList };
+        return { posts };
     };
 
     @Get('/:postId')
