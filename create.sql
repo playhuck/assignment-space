@@ -1,5 +1,5 @@
 -- --------------------------------------------------------
--- 호스트:                          classum-rds-dev-ap-northeast-2.cledddgfrnxl.ap-northeast-2.rds.amazonaws.com
+-- 호스트:                          rds-dev-ap-northeast-2.cledddgfrnxl.ap-northeast-2.rds.amazonaws.com
 -- 서버 버전:                        8.0.35 - Source distribution
 -- 서버 OS:                        Linux
 -- HeidiSQL 버전:                  12.0.0.6468
@@ -14,7 +14,7 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
--- 테이블 classum_dev.post 구조 내보내기
+-- 테이블 post 구조 내보내기
 CREATE TABLE IF NOT EXISTS `post` (
   `post_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `post` (
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
--- 테이블 classum_dev.post_comment 구조 내보내기
+-- 테이블 post_comment 구조 내보내기
 CREATE TABLE IF NOT EXISTS `post_comment` (
   `post_comment_id` int NOT NULL AUTO_INCREMENT,
   `post_id` int DEFAULT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `post_comment` (
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
--- 테이블 classum_dev.post_comment_reply 구조 내보내기
+-- 테이블 post_comment_reply 구조 내보내기
 CREATE TABLE IF NOT EXISTS `post_comment_reply` (
   `post_comment_reply_id` int NOT NULL AUTO_INCREMENT,
   `comment_id` int DEFAULT NULL,
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `post_comment_reply` (
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
--- 테이블 classum_dev.post_file 구조 내보내기
+-- 테이블 post_file 구조 내보내기
 CREATE TABLE IF NOT EXISTS `post_file` (
   `post_file_id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `post_id` int NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS `post_file` (
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
--- 테이블 classum_dev.space 구조 내보내기
+-- 테이블 space 구조 내보내기
 CREATE TABLE IF NOT EXISTS `space` (
   `space_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int DEFAULT NULL,
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS `space` (
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
--- 테이블 classum_dev.space_role 구조 내보내기
+-- 테이블 space_role 구조 내보내기
 CREATE TABLE IF NOT EXISTS `space_role` (
   `space_role_id` int NOT NULL AUTO_INCREMENT,
   `space_id` int NOT NULL,
@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS `space_role` (
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
--- 테이블 classum_dev.space_role_code 구조 내보내기
+-- 테이블 space_role_code 구조 내보내기
 CREATE TABLE IF NOT EXISTS `space_role_code` (
   `space_role_code_id` int NOT NULL AUTO_INCREMENT,
   `space_role_id` int DEFAULT NULL,
@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS `space_role_code` (
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
--- 테이블 classum_dev.space_user_alarm 구조 내보내기
+-- 테이블 space_user_alarm 구조 내보내기
 CREATE TABLE IF NOT EXISTS `space_user_alarm` (
   `space_user_alarm_id` int NOT NULL AUTO_INCREMENT,
   `space_id` int NOT NULL,
@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS `space_user_alarm` (
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
--- 테이블 classum_dev.space_user_alarm_settings 구조 내보내기
+-- 테이블 space_user_alarm_settings 구조 내보내기
 CREATE TABLE IF NOT EXISTS `space_user_alarm_settings` (
   `space_user_alarm_settings_id` int NOT NULL AUTO_INCREMENT,
   `space_id` int NOT NULL,
@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS `space_user_alarm_settings` (
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
--- 테이블 classum_dev.space_user_role 구조 내보내기
+-- 테이블 space_user_role 구조 내보내기
 CREATE TABLE IF NOT EXISTS `space_user_role` (
   `space_user_role_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS `space_user_role` (
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
--- 테이블 classum_dev.user 구조 내보내기
+-- 테이블 user 구조 내보내기
 CREATE TABLE IF NOT EXISTS `user` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `email` varchar(128) NOT NULL,
